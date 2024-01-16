@@ -140,6 +140,6 @@
   []
   
   [Outputs]
-    exodus = false
-    csv = true
+    exodus = true
+    csv = false
   []
