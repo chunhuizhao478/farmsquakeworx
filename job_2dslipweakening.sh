@@ -8,4 +8,7 @@
 #SBATCH --account=ddp408
 #SBATCH -t 00:01:00
 
+module purge
+module load gcc/10.2.0 python/3.8.12 py-virtualenv/16.7.6 py-pip/21.1.2 openmpi/4.1.3
+export CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77 MOOSE_JOBS=6 METHODS=opt METHOD=opt
 mpirun -n 2 /home/czhao1/farmsquakeworx/farmsquakeworx-opt -i /home/czhao1/farmsquakeworx/examples/2d_slipweakening/tpv2052D.i
