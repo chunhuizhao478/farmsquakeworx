@@ -1,0 +1,7 @@
+Applications:
+    farmsquakeworx:
+        exe_directory:     ${ROOT_DIR}
+        exe_name:          farmsquakeworx
+        app_types:
+            - farmsquakeworx
+        content_directory: doc/content
