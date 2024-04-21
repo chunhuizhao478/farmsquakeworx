@@ -31,15 +31,15 @@
     #primary variables
     displacements = 'disp_x disp_y'
     #damping ratio
-    q = 0.1
+    q = 0.2
     #characteristic length (m)
-    Dc = 0.4
+    Dc = 0.1
     #initial normal stress (Pa)
-    T2_o = 120e6
+    T2_o = 100e6
     #dynamic friction coefficient
-    mu_d = 0.525
+    mu_d = 0.2
     #element edge length (m)
-    len = 100
+    len = 50
   []
 
   [AuxVariables]
@@ -197,8 +197,8 @@
   [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        lambda = 32.04e9
-        shear_modulus = 32.04e9
+        lambda = 20e9
+        shear_modulus = 20e9
         use_displaced_mesh = false
     []
     [stress]
@@ -207,7 +207,7 @@
     [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2670
+        prop_values = 2700
     []
     [./czm_mat]
         type = SlipWeakeningFriction2d
@@ -248,8 +248,8 @@
 
   [Executioner]
     type = Transient
-    dt = 0.005
-    num_steps = 20
+    dt = 0.001
+    num_steps = 30
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -258,7 +258,7 @@
 
   [Outputs]
     csv = true
-    interval = 5
+    interval = 10
   []
 
   [Postprocessors]
