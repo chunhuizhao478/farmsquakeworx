@@ -7,12 +7,12 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 2
-      nx = 50
-      ny = 20
-      xmin = -1600
-      xmax = 1600
-      ymin = -800
-      ymax = 800
+      nx = 10
+      ny = 10
+      xmin = -1.0
+      xmax = 1.0
+      ymin = -1.0
+      ymax = 1.0
     []
     [./new_block]
       type = ParsedSubdomainMeshGenerator
@@ -31,15 +31,15 @@
     #primary variables
     displacements = 'disp_x disp_y'
     #damping ratio
-    q = 0.2
+    q = 0.1
     #characteristic length (m)
-    Dc = 0.1
+    Dc = 0.8
     #initial normal stress (Pa)
-    T2_o = 100e6
+    T2_o = 10000000.0
     #dynamic friction coefficient
-    mu_d = 0.2
+    mu_d = 0.1
     #element edge length (m)
-    len = 50
+    len = 0.2
   []
 
   [AuxVariables]
@@ -197,8 +197,8 @@
   [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        lambda = 20e9
-        shear_modulus = 20e9
+        lambda = 10000000000.0
+        shear_modulus = 10000000000.0
         use_displaced_mesh = false
     []
     [stress]
@@ -207,7 +207,7 @@
     [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2700
+        prop_values = 2700.0
     []
     [./czm_mat]
         type = SlipWeakeningFriction2d
@@ -248,8 +248,8 @@
 
   [Executioner]
     type = Transient
-    dt = 0.001
-    num_steps = 30
+    dt = 0.1
+    num_steps =1
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -258,7 +258,7 @@
 
   [Outputs]
     csv = true
-    interval = 10
+    interval = 100
   []
 
   [Postprocessors]
