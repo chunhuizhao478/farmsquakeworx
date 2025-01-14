@@ -13,12 +13,14 @@ InitialDipStressCDBM::validParams()
 {
   InputParameters params = Function::validParams();
   params.addRequiredParam<std::string>("benchmark_type", "type of benchmark: tpv205, tpv14, tpv24");
+  params.addParam<Real>("density", 2670, "density of the material");
   return params;
 }
 
 InitialDipStressCDBM::InitialDipStressCDBM(const InputParameters & parameters)
   : Function(parameters),
-  _benchmark(getParam<std::string>("benchmark_type"))
+  _benchmark(getParam<std::string>("benchmark_type")),
+  _density(getParam<Real>("density"))
 {
 }
 
@@ -40,7 +42,7 @@ InitialDipStressCDBM::value(Real /*t*/, const Point & p) const
   if ( _benchmark == tpv205 ){
     
     //tpv205
-    T1_o = -2670 * 9.8 * abs(y_coord);
+    T1_o = -_density * 9.8 * abs(y_coord);
   }
   else if ( _benchmark == tpv14 ){
   }

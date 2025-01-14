@@ -2,27 +2,27 @@
   [msh]
     type = GeneratedMeshGenerator
     dim = 3
-    xmin = -15000
-    xmax = 15000
+    xmin = -12000
+    xmax = 12000
     ymin = -20000
     ymax = 0
-    zmin = -8000
-    zmax = 8000
-    nx = 150
+    zmin = -10000
+    zmax = 10000
+    nx = 100
     ny = 100
-    nz = 80
+    nz = 100
     subdomain_ids = 1
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= -13000 & x <= 13000 & y > -18000 & z < 0'
+    combinatorial_geometry = 'x >= -10000 & x <= 10000 & y > -18000 & z < 0'
     block_id = 2
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x > -13000 & x < 13000 & y > -18000 & z > 0'
+      combinatorial_geometry = 'x > -10000 & x < 10000 & y > -18000 & z > 0'
       block_id = 3
   []      
     [./split_1]
@@ -53,65 +53,62 @@
     
     #characteristic length (m) #this gives ~200m for resolve L_f
     Dc = 0.4
-
+    
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    lambda_o = 3.204e10
-      
+    lambda_o = 32.04e9
+        
     #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 3.204e10
-  
+    shear_modulus_o = 32.04e9
+    
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.7
-  
+    xi_0 = -0.8
+    
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.7
-  
+    xi_d = -0.9
+    
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
     #may need a bit space, use 1.5 as boundary
     xi_max = 1.8
-  
+    
     #<strain invariants ratio: minimum allowable value>: set boundary
     #Xu_etal_P15-2D
     xi_min = -1.8
-  
+
+    #if option 2, use Cd_constant
+    Cd_constant = 1e5
+
+    #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+    #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
+    CdCb_multiplier = 100
+
+    #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
+    # CBCBH_multiplier = 0.0
+    CBH_constant = 1e4
+
+    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
+    C_1 = 0
+
+    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
+    C_2 = 0.05
+
+    #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+    beta_width = 0.03 #1e-3
+    
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
-  
+    
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
-  
+    
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
     m2 = 1
-  
-    ##Compute gamma_damaged_r, xi_1
-    #Determine two parameters using convexity of Hessian matrix, positivity of eigenvalues
-    #two equations [15a] = 0 [15b] = 0 solves gamma_damaged_r and xi_1 
-    #check struct_param.m 
-  
-    #coefficient of damage solid modulus
-    gamma_damaged_r = 3.8667e10
-  
-    #critical point of three phases (strain invariants ratio vs damage)
-    xi_1 = 0.878
-  
-    ##Compute parameters in granular states
-    #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
-    #check struct_param.m
-  
-    #--------------------------------------------------------------------------------#
-    #Note: "computeAlphaCr" needs to change every time the related parameters changed
-    #--------------------------------------------------------------------------------#
-  
-    # #coefficients
-    # chi = 0.75
-    a0 = 8.9662e9
-    a1 = -2.5257e10
-    a2 = 2.2640e10
-    a3 = -6.2689e9
-  
-    #diffusion coefficient #for structural stress coupling
+    
+    # energy ratio
+    chi = 0.8
+
+    #
     D = 0
     
   []
@@ -243,61 +240,24 @@
           order = CONSTANT
           family = MONOMIAL
       [] 
-    #obtain parameters from MaterialRealAux, pass parameters to subApp
-    [./B_old]
-        order = FIRST
-        family = LAGRANGE
-      []
-      [./xi_old]
-          order = CONSTANT
-          family = MONOMIAL
-      []
-      [./I2_old]
-          order = CONSTANT
-          family = MONOMIAL
-      []
-      [./mu_old]
-          order = CONSTANT
-          family = MONOMIAL
-      []
-      [./lambda_old]
-          order = CONSTANT
-          family = MONOMIAL
-      []
-      [./gamma_old]
-          order = CONSTANT
-          family = MONOMIAL
-      []
-      #updated alpha, B
-      [./alpha_in]
+      [initial_damage_aux]
         order = CONSTANT
         family = MONOMIAL
       []
-      [./B_in]
-        order = CONSTANT
-        family = MONOMIAL
+      [initial_breakage_aux]
+          order = CONSTANT
+          family = MONOMIAL
       []
-      #high-order-dummy
-      [./alpha_in_dummy]
-        order = FIRST
-        family = MONOMIAL
-      []
-      [./B_in_dummy]
-        order = FIRST
-        family = MONOMIAL
+      [initial_shear_stress_aux]
+          order = CONSTANT
+          family = MONOMIAL
       []
       #grad_alpha
       [./alpha_grad_x]
-        order = CONSTANT
-        family = MONOMIAL
       []
       [./alpha_grad_y]
-        order = CONSTANT
-        family = MONOMIAL
       []
       [./alpha_grad_z]
-        order = CONSTANT
-        family = MONOMIAL
       []
       #
       [./check_function_initial_stress_xx]
@@ -524,37 +484,6 @@
         variable = elem_length
         value = 200
       []
-    #obtain parameters from MaterialRealAux
-    [get_xi_old]
-        type = MaterialRealAux
-        property = xi
-        variable = xi_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-      []
-      [get_I2_old]
-          type = MaterialRealAux
-          property = I2
-          variable = I2_old
-          execute_on = 'INITIAL TIMESTEP_BEGIN'
-      []
-      [get_mu_old]
-          type = MaterialRealAux
-          property = shear_modulus
-          variable = mu_old
-          execute_on = 'INITIAL TIMESTEP_BEGIN'
-      []
-      [get_lambda_old]
-          type = MaterialRealAux
-          property = lambda
-          variable = lambda_old
-          execute_on = 'INITIAL TIMESTEP_BEGIN'
-      []
-      [get_gamma_old]
-          type = MaterialRealAux
-          property = gamma_damaged
-          variable = gamma_old
-          execute_on = 'INITIAL TIMESTEP_BEGIN'
-      []
       #
       [checkxx]
         type = FunctionAux
@@ -655,14 +584,12 @@
       #damage breakage model
       [stress_medium]
         type = ComputeDamageBreakageStress3D
-        alpha_in = alpha_in_dummy
-        B_in = B_in_dummy
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'eps_p eps_e eps_total I1'
+        output_properties = 'B alpha_damagedvar xi stress'
         outputs = exodus
-      []
+      [] 
       [density]
           type = GenericConstantMaterial
           prop_names = density
@@ -706,6 +633,32 @@
                             func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                             func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
       [../]
+      #dummy material props
+      [initial_damage]
+        type = GenericConstantMaterial
+        prop_names = initial_damage
+        prop_values = 0
+      []
+      [initial_breakage]
+        type = GenericConstantMaterial
+        prop_names = initial_breakage
+        prop_values = 0
+      []
+      [initial_shear_stress]
+        type = GenericConstantMaterial
+        prop_names = initial_shear_stress
+        prop_values = 0
+      []
+      [damage_perturbation]
+        type = GenericConstantMaterial
+        prop_names = damage_perturbation
+        prop_values = 0
+      []
+      [shear_stress_perturbation]
+        type = GenericConstantMaterial
+        prop_names = shear_stress_perturbation
+        prop_values = 0
+      []
   []
   
   [Functions]
@@ -732,12 +685,12 @@
         benchmark_type = tpv205
       []
       [./func_initial_stress_yy]
-        type = InitialDipStressCDBM
-        benchmark_type = tpv205
+        type = ConstantFunction
+        value = -127.5e6
       []
       [./func_initial_stress_yz]
-          type = ConstantFunction
-          value = 0
+        type = ConstantFunction
+        value = 0
       []
       [./func_initial_stress_zz]
         type = ConstantFunction
@@ -775,7 +728,7 @@
   
   [Executioner]
       type = Transient
-      dt = 0.001
+      dt = 0.0025
       end_time = 12.0
       # num_steps = 1
       [TimeIntegrator]
@@ -787,35 +740,8 @@
   
   [Outputs]
       exodus = true
-      time_step_interval = 40
-      show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z xi_old alpha_in B_in'
-  []
-
-  [MultiApps]
-    [./sub_app]
-        type = TransientMultiApp
-        positions = '0 0 0'
-        input_files = 'tpv2053d_cdbm_hex_sub.i'
-        execute_on = 'TIMESTEP_BEGIN'
-    [../]
-  []
-  
-  [Transfers]
-    [pull_resid]
-        type = MultiAppCopyTransfer
-        from_multi_app = sub_app
-        source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub alpha_checked_dummy B_checked_dummy'
-        variable = 'alpha_in B_in alpha_grad_x alpha_grad_y alpha_in_dummy B_in_dummy'
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    #we actually don't need to pass alpha and B
-    [push_disp]
-        type = MultiAppCopyTransfer
-        to_multi_app = sub_app
-        source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old alpha_in_dummy B_in_dummy'
-        variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old alpha_old_dummy B_old_dummy'
-        execute_on = 'TIMESTEP_BEGIN'
-    []
+      time_step_interval = 1
+      # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi stress_00 stress_11 stress_22 stress_01 stress_12 stress_02'
   []
 
   [BCs]

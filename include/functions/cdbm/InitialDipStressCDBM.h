@@ -17,5 +17,6 @@ public:
   virtual Real value(Real t, const Point & p) const override;
 
   std::string _benchmark;
+  const Real _density;
 
 };
