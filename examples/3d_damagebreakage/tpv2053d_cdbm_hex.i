@@ -775,7 +775,7 @@
   
   [Executioner]
       type = Transient
-      dt = 0.0025
+      dt = 0.001
       end_time = 12.0
       # num_steps = 1
       [TimeIntegrator]
@@ -787,7 +787,7 @@
   
   [Outputs]
       exodus = true
-      time_step_interval = 1
+      time_step_interval = 40
       show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z xi_old alpha_in B_in'
   []
 
