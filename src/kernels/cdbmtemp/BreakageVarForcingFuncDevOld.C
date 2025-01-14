@@ -124,12 +124,12 @@ BreakageVarForcingFuncDevOld::computeQpResidual()
     }
     else if ( _option == 2 ){
 
-      if ( _Cd_constant == 0.0 ){
-        mooseError("For option 2, need to provide nonzero Cd_constant value !");
-      }
-      else{
+      // if ( _Cd_constant == 0.0 ){
+      //   mooseError("For option 2, need to provide nonzero Cd_constant value !");
+      // }
+      // else{
         Cd = _Cd_constant;
-      }
+      // }
 
     }
     else{
