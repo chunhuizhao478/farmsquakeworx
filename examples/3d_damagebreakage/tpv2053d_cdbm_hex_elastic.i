@@ -1,4 +1,4 @@
-#L = 32.04e9*1.5/(120e6*(0.677-0.1))
+#L = 32.04e9*1.5/(120e6*(0.677-0.1))=694=694
 [Mesh]
   [msh]
     type = GeneratedMeshGenerator
