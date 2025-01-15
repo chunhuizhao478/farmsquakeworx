@@ -1,4 +1,5 @@
-#L = 32.04e9*1.5/(120e6*(0.677-0.1))
+#L = 32.04e9*1.5/(120e6*(0.677-0.4)) = 1445
+#S = (0.677-0.583)/(0.583-0.4) = 0.5
 [Mesh]
   [msh]
     type = GeneratedMeshGenerator
@@ -669,7 +670,7 @@
       #mud constant value
       [func_dynamic_friction_coeff_mud]
           type = ConstantFunction
-          value = 0.1
+          value = 0.4
       []
       #Note:restrict stress variation along the fault only
       #this function is used in czm only
