@@ -1,17 +1,16 @@
-#L = 32.04e9*1.5/(120e6*(0.677-0.1))
 [Mesh]
   [msh]
     type = GeneratedMeshGenerator
     dim = 3
-    xmin = -15000
-    xmax = 15000
-    ymin = -20000
+    xmin = -5000
+    xmax = 5000
+    ymin = -15000
     ymax = 0
-    zmin = -10000
-    zmax = 10000
-    nx = 150
-    ny = 100
-    nz = 100
+    zmin = -5000
+    zmax = 5000
+    nx = 50
+    ny = 75
+    nz = 50
     subdomain_ids = 1
   []
   [./new_block_1]
@@ -53,7 +52,7 @@
     q = 0.4
     
     #characteristic length (m) #this gives ~200m for resolve L_f
-    Dc = 1.5
+    Dc = 0.4
     
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -672,7 +671,7 @@
       #mud constant value
       [func_dynamic_friction_coeff_mud]
           type = ConstantFunction
-          value = 0.1
+          value = 0.525
       []
       #Note:restrict stress variation along the fault only
       #this function is used in czm only
@@ -744,7 +743,7 @@
   
   [Outputs]
       exodus = true
-      time_step_interval = 20
+      time_step_interval = 10
       # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi stress_00 stress_11 stress_22 stress_01 stress_12 stress_02'
   []
 

@@ -16,4 +16,11 @@ public:
   using Function::value;
   virtual Real value(Real t, const Point & p) const override;
 
+  Real _patch_xmin;
+  Real _patch_xmax;
+  Real _patch_ymin;
+  Real _patch_ymax;
+  Real _mu_s_patch;
+  Real _mu_s_outside;
+
 };

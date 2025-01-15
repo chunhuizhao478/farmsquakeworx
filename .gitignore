@@ -323,3 +323,11 @@ share/
 /modules/fsi/unit/fsi-unit.yaml
 /tutorials/tutorial01_app_development/*/babbler.yaml
 /tutorials/darcy_thermo_mech/*/darcy_thermo_mech.yaml
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_elastic_out_cp/0135-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_elastic_out_cp/0135-mesh.cpa.gz/1/split-1-0.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_elastic_out_cp/0268-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_elastic_out_cp/0268-mesh.cpa.gz/1/split-1-0.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_param_out_cp/0020-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_param_out_cp/0020-mesh.cpa.gz/1/split-1-0.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_param_out_cp/0021-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_param_out_cp/0021-mesh.cpa.gz/1/split-1-0.gz

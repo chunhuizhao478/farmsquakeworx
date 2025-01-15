@@ -20,7 +20,7 @@ InitialShearStressCDBM::validParams()
   params.addParam<Real>("nucl_zmin", -200, "minmum z value for nucleation patch");
   params.addParam<Real>("nucl_zmax", 200, "maximum z value for nucleation patch");
   params.addParam<Real>("T1_o_nucl", 81.6e6, "shear stress value for nucleation patch");
-  params.addParam<Real>("T1_o", 60.0e6, "shear stress value for rest of the domain");
+  params.addParam<Real>("T1_o", 70.0e6, "shear stress value for rest of the domain");
   return params;
 }
 
