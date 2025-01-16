@@ -1,3 +1,5 @@
+#--------------Parameter File----------------#
+#Please refer to documentation for details
 ## Mesh and Geometry Parameters
 #--------------------------------------------#
 xmin = -15000 #minmum x value for domain
@@ -18,14 +20,14 @@ fymin = -15000 #minmum y value for fault plane
 ## Material Properties
 #--------------------------------------------#
 q = 0.4 #damping ratio
-Dc = 0.4 #characteristic length (m)
+Dc = 1.5 #characteristic length (m)
 lambda_o = 32.04e9 #initial lambda value (first lame constant) [Pa]
 shear_modulus_o = 32.04e9 #initial shear modulus value (second lame constant) [Pa]
 pressure_wave_speed = 6000 #p wave speed [m/s]
 shear_wave_speed = 3464 #s wave speed [m/s]
 density = 2670 #density [kg/m^3]
 xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
-xi_d = -0.9 #strain invariants ratio: onset of breakage healing
+xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 Cd_constant = 1e5 #coefficient gives positive damage evolution
 CdCb_multiplier = 100 #The multiplier between Cd and Cb
 CBH_constant = 1e4 #coefficient of healing for breakage evolution
@@ -45,11 +47,11 @@ patch_xmax = 15000 #maximum x value for patch
 patch_ymin = -15000 #minmum y value for patch
 patch_ymax = 0 #maximum y value for patch
 mu_s_patch = 0.677 #static friction coefficient for slip weakening
-mu_s_outside = 0.8 #static friction coefficient for outside the patch
-mu_d = 0.525 #dynamic friction coefficient
+mu_s_outside = 10000 #static friction coefficient for outside the patch
+mu_d = 0.3 #dynamic friction coefficient
 ## Initial Stress Field
 #--------------------------------------------#
-sts_xx = -200e6 #initial stress field xx component
+sts_xx = -135e6 #initial stress field xx component
 sts_yy = -127.5e6 #initial stress field yy component
 sts_zz = -120e6 #initial stress field zz component
 sts_xy = 0 #initial stress field xy component
@@ -69,11 +71,14 @@ T1_o = 70.0e6 #shear stress value for rest of the domain
 #--------------------------------------------#
 elem_length = 200 #element length
 dt = 0.0025 #time step
-end_time = 12.0 #end time
-time_step_interval = 100 #time step interval for output
+end_time = 0.025 #end time
+time_step_interval = 1 #time step interval for output
 #--------------------------------------------#
 
-
+#-------------Main Input File----------------#
+#Main code for running the simulation
+#We don't recommend changing this file
+#--------------------------------------------#
 [Mesh]
   [msh]
     type = GeneratedMeshGenerator
@@ -1007,3 +1012,4 @@ time_step_interval = 100 #time step interval for output
         boundary = back
     []
   []
+#--------------------------------------------#
