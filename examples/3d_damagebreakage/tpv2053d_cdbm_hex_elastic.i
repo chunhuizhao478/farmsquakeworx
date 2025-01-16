@@ -1,5 +1,5 @@
-#L = 32.04e9*1.5/(120e6*(0.677-0.4)) = 1445
-#S = (0.677-0.583)/(0.583-0.4) = 0.5
+#L = 32.04e9*1.5/(120e6*(0.677-0.3)) = 1062
+#S = (0.677-0.583)/(0.583-0.3) = 0.332
 [Mesh]
   [msh]
     type = GeneratedMeshGenerator
@@ -670,13 +670,13 @@
       #mud constant value
       [func_dynamic_friction_coeff_mud]
           type = ConstantFunction
-          value = 0.1
+          value = 0.3
       []
       #Note:restrict stress variation along the fault only
       #this function is used in czm only
       [./func_initial_stress_xx]
           type = ConstantFunction
-          value = -300e6
+          value = -135e6
       []
       [./func_initial_stress_xy]
           type = ConstantFunction
@@ -688,7 +688,7 @@
       []
       [./func_initial_stress_yy]
         type = ConstantFunction
-        value = -80e6
+        value = -127.5e6
       []
       [./func_initial_stress_yz]
         type = ConstantFunction
