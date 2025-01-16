@@ -670,7 +670,7 @@
       #mud constant value
       [func_dynamic_friction_coeff_mud]
           type = ConstantFunction
-          value = 0.4
+          value = 0.1
       []
       #Note:restrict stress variation along the fault only
       #this function is used in czm only
