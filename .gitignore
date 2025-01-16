@@ -331,3 +331,7 @@ examples/3d_damagebreakage/tpv2053d_cdbm_hex_param_out_cp/0020-mesh.cpa.gz/1/hea
 examples/3d_damagebreakage/tpv2053d_cdbm_hex_param_out_cp/0020-mesh.cpa.gz/1/split-1-0.gz
 examples/3d_damagebreakage/tpv2053d_cdbm_hex_param_out_cp/0021-mesh.cpa.gz/1/header.gz
 examples/3d_damagebreakage/tpv2053d_cdbm_hex_param_out_cp/0021-mesh.cpa.gz/1/split-1-0.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0418-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0418-mesh.cpa.gz/1/split-1-0.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0838-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0838-mesh.cpa.gz/1/split-1-0.gz
