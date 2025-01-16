@@ -67,7 +67,7 @@
     xi_0 = -0.8
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.8
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -676,7 +676,7 @@
       #this function is used in czm only
       [./func_initial_stress_xx]
           type = ConstantFunction
-          value = -200e6
+          value = -300e6
       []
       [./func_initial_stress_xy]
           type = ConstantFunction
@@ -688,7 +688,7 @@
       []
       [./func_initial_stress_yy]
         type = ConstantFunction
-        value = -127.5e6
+        value = -80e6
       []
       [./func_initial_stress_yz]
         type = ConstantFunction
@@ -742,8 +742,8 @@
   
   [Outputs]
       exodus = true
-      time_step_interval = 20
-      # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi stress_00 stress_11 stress_22 stress_01 stress_12 stress_02'
+      time_step_interval = 40
+      show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi stress_00 stress_11 stress_22 stress_01 stress_12 stress_02'
   []
 
   [BCs]
