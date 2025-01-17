@@ -6,7 +6,7 @@
     dim = 3
     xmin = -15000
     xmax = 15000
-    ymin = -15000
+    ymin = -20000
     ymax = 0
     zmin = -10000
     zmax = 10000
@@ -747,7 +747,7 @@
   [Outputs]
       exodus = true
       time_step_interval = 40
-      # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi stress_00 stress_11 stress_22 stress_01 stress_12 stress_02'
+      show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi stress_00 stress_11 stress_22 stress_01 stress_12 stress_02'
   []
 
   [BCs]
