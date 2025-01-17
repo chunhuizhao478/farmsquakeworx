@@ -1,16 +1,16 @@
-#L = 32.04e9*1.5/(120e6*(0.677-0.4)) = 1445
-#S = (0.677-0.583)/(0.583-0.4) = 0.5
+#L = 32.04e9*1.5/(120e6*(0.677-0.1)) = 694
+#S = (0.677-0.583)/(0.583-0.1) = 0.2
 [Mesh]
   [msh]
     type = GeneratedMeshGenerator
     dim = 3
-    xmin = -20000
-    xmax = 20000
-    ymin = -20000
+    xmin = -15000
+    xmax = 15000
+    ymin = -15000
     ymax = 0
     zmin = -10000
     zmax = 10000
-    nx = 200
+    nx = 150
     ny = 100
     nz = 100
     subdomain_ids = 1
@@ -18,13 +18,13 @@
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= -20000 & x <= 20000 & y > -15000 & z < 0'
+    combinatorial_geometry = 'x >= -15000 & x <= 15000 & y > -15000 & z < 0'
     block_id = 2
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x > -20000 & x < 20000 & y > -15000 & z > 0'
+      combinatorial_geometry = 'x > -15000 & x < 15000 & y > -15000 & z > 0'
       block_id = 3
   []      
     [./split_1]
@@ -670,13 +670,13 @@
       #mud constant value
       [func_dynamic_friction_coeff_mud]
           type = ConstantFunction
-          value = 0.4
+          value = 0.1
       []
       #Note:restrict stress variation along the fault only
       #this function is used in czm only
       [./func_initial_stress_xx]
           type = ConstantFunction
-          value = -300e6
+          value = -135e6
       []
       [./func_initial_stress_xy]
           type = ConstantFunction
@@ -684,11 +684,15 @@
       []
       [./func_initial_stress_xz]
         type = InitialShearStressCDBM
+        nucl_xmin = -1000
+        nucl_xmax = 1000
+        nucl_ymin = -8500
+        nucl_ymax = -6500
         benchmark_type = tpv205
       []
       [./func_initial_stress_yy]
         type = ConstantFunction
-        value = -80e6
+        value = -127.5e6
       []
       [./func_initial_stress_yz]
         type = ConstantFunction
@@ -742,7 +746,7 @@
   
   [Outputs]
       exodus = true
-      time_step_interval = 80
+      time_step_interval = 40
       # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi stress_00 stress_11 stress_22 stress_01 stress_12 stress_02'
   []
 
