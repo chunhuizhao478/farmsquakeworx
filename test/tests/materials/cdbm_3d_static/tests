@@ -1,0 +1,9 @@
+[Tests]
+  [cdbm_3d_static]
+    type = CSVDiff
+    input = test_cdbm_3d_static.i
+    csvdiff = 'test_cdbm_3d_static_out.csv'
+    recover = false
+    requirement = "ComputeDamageBreakageStress3DStatic shall compute static damage-breakage stress on 3D mesh under compression."
+  []
+[]

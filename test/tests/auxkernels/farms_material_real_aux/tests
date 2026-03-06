@@ -1,0 +1,11 @@
+[Tests]
+  [farms_material_real_aux]
+    type = CSVDiff
+    input = test_farms_material_real_aux.i
+    csvdiff = 'test_farms_material_real_aux_out.csv'
+    recover = false
+    mesh_mode = 'REPLICATED'
+    allow_warnings = true
+    requirement = "FarmsMaterialRealAux shall extract local fault quantities from CZM material properties in fault-aligned coordinates."
+  []
+[]

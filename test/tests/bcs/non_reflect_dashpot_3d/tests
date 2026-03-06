@@ -1,0 +1,9 @@
+[Tests]
+  [dashpot_3d]
+    type = CSVDiff
+    input = test_dashpot_3d.i
+    csvdiff = 'test_dashpot_3d_out.csv'
+    recover = false
+    requirement = "NonReflectDashpotBC3d shall absorb outgoing waves at 3D boundaries."
+  []
+[]

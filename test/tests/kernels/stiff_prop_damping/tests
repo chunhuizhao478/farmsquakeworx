@@ -1,0 +1,9 @@
+[Tests]
+  [stiff_prop_damping]
+    type = CSVDiff
+    input = test_stiff_prop_damping.i
+    csvdiff = 'test_stiff_prop_damping_out.csv'
+    recover = false
+    requirement = "StiffPropDamping shall apply stiffness-proportional Rayleigh damping."
+  []
+[]

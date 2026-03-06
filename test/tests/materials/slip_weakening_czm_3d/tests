@@ -1,0 +1,10 @@
+[Tests]
+  [sw_czm_3d]
+    type = CSVDiff
+    input = test_sw_czm_3d.i
+    csvdiff = 'test_sw_czm_3d_out.csv'
+    recover = false
+    mesh_mode = 'REPLICATED'
+    requirement = "SlipWeakeningFrictionczm3d shall compute slip weakening friction on 3D CZM interface with explicit time integration."
+  []
+[]

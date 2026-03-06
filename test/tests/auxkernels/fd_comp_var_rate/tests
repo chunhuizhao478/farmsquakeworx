@@ -1,0 +1,8 @@
+[Tests]
+  [fd_rate]
+    type = CSVDiff
+    input = test_fd_comp_var_rate.i
+    csvdiff = 'test_fd_comp_var_rate_out.csv'
+    requirement = "FDCompVarRate shall compute time derivative via finite difference (val - val_older) / dt."
+  []
+[]

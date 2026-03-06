@@ -144,6 +144,9 @@ moose/include/base/Precompiled.h.gch
 
 framework/contrib/exodiff/exodiff
 
+# Large mesh files
+*.msh
+
 # Mac garbage
 .DS_Store
 *.dSYM
@@ -335,3 +338,9 @@ examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0418-mesh.cpa.gz/1/head
 examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0418-mesh.cpa.gz/1/split-1-0.gz
 examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0838-mesh.cpa.gz/1/header.gz
 examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0838-mesh.cpa.gz/1/split-1-0.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0419-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0419-mesh.cpa.gz/1/split-1-0.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0210-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0210-mesh.cpa.gz/1/split-1-0.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0373-mesh.cpa.gz/1/header.gz
+examples/3d_damagebreakage/tpv2053d_cdbm_hex_test_out_cp/0373-mesh.cpa.gz/1/split-1-0.gz

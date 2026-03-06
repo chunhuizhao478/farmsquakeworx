@@ -1,0 +1,472 @@
+__PARAM_BLOCK__
+
+# Multi-Fault 2D Dynamic Rupture Simulation (auto-generated)
+
+[Mesh]
+    [./msh]
+      type = FileMeshGenerator
+      file = '__MESH_FILE__'
+    []
+    [./subdomain_id]
+      input = msh
+      type = SubdomainPerElementGenerator
+      element_ids = '
+      __ELEMENT_IDS__
+      '
+      subdomain_ids = '
+      __SUBDOMAIN_IDS__
+      '
+    []
+    [./split]
+      type = BreakMeshByBlockGenerator
+      input = subdomain_id
+      split_interface = true
+      block_pairs = '__BLOCK_PAIRS__'
+    []
+    [./sidesets]
+      input = split
+      type = SideSetsFromNormalsGenerator
+      normals = '-1 0 0
+                  1 0 0
+                  0 -1 0
+                  0 1 0'
+      new_boundary = 'left right bottom top'
+    []
+  []
+
+  [GlobalParams]
+    displacements = 'disp_x disp_y'
+    q = ${q}
+    Dc = ${Dc}
+    T2_o = ${T2_o}
+    mu_d = ${mu_d}
+    len = ${len}
+  []
+
+  [AuxVariables]
+    [./resid_x]
+      order = FIRST
+      family = LAGRANGE
+    [../]
+    [./resid_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./resid_slipweakening_x]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./resid_slipweakening_y]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./disp_slipweakening_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./disp_slipweakening_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./vel_slipweakening_x]
+      order = FIRST
+      family = LAGRANGE
+    []
+    [./vel_slipweakening_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./mu_s]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./ini_shear_stress]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./ini_normal_stress]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./local_shear_jump]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./local_normal_jump]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./local_shear_jump_rate]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./local_normal_jump_rate]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./local_shear_traction]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./local_normal_traction]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./normal_x]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./normal_y]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./tangent_x]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./tangent_y]
+      order = FIRST
+      family = MONOMIAL
+    []
+  []
+
+  [Physics/SolidMechanics/CohesiveZone]
+    [./czm_ik]
+      boundary = '__BOUNDARY_LIST__'
+      strain = SMALL
+      generate_output='traction_x traction_y jump_x jump_y'
+    [../]
+  []
+
+  [Physics]
+    [SolidMechanics]
+      [QuasiStatic]
+        [all]
+          strain = SMALL
+          add_variables = true
+          planar_formulation = PLANE_STRAIN
+          generate_output = 'stress_xx stress_yy stress_xy'
+          extra_vector_tags = 'restore_tag'
+        []
+      []
+    []
+  []
+
+  [Problem]
+    extra_tag_vectors = 'restore_tag'
+  []
+
+__FUNCTIONS_BLOCK__
+
+  [AuxKernels]
+    [Displacment_x]
+      type = ProjectionAux
+      variable = disp_slipweakening_x
+      v = disp_x
+      execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Displacement_y]
+      type = ProjectionAux
+      variable = disp_slipweakening_y
+      v = disp_y
+      execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Vel_x]
+      type = CompVarRate
+      variable = vel_slipweakening_x
+      coupled = disp_x
+      execute_on = 'TIMESTEP_END'
+    []
+    [Vel_y]
+      type = CompVarRate
+      variable = vel_slipweakening_y
+      coupled = disp_y
+      execute_on = 'TIMESTEP_END'
+    []
+    [Residual_x]
+      type = ProjectionAux
+      variable = resid_slipweakening_x
+      v = resid_x
+      execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Residual_y]
+      type = ProjectionAux
+      variable = resid_slipweakening_y
+      v = resid_y
+      execute_on = 'TIMESTEP_BEGIN'
+    []
+    [restore_x]
+      type = TagVectorAux
+      vector_tag = 'restore_tag'
+      v = 'disp_x'
+      variable = 'resid_x'
+    []
+    [restore_y]
+      type = TagVectorAux
+      vector_tag = 'restore_tag'
+      v = 'disp_y'
+      variable = 'resid_y'
+    []
+    [StaticFricCoeff]
+      type = FunctionAux
+      variable = mu_s
+      function = func_static_friction_coeff_mus
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
+    []
+    [StrikeShearStress]
+      type = FunctionAux
+      variable = ini_shear_stress
+      function = func_initial_strike_shear_stress
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
+    []
+    [NormalStress]
+      type = FunctionAux
+      variable = ini_normal_stress
+      function = func_initial_normal_stress
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
+    []
+    [GetShearJump]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_shear_jump'
+      variable = local_shear_jump
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalJump]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_normal_jump'
+      variable = local_normal_jump
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetShearJumpRate]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_shear_jump_rate'
+      variable = local_shear_jump_rate
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalJumpRate]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_normal_jump_rate'
+      variable = local_normal_jump_rate
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetShearTraction]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_shear_traction'
+      variable = local_shear_traction
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalTraction]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_normal_traction'
+      variable = local_normal_traction
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalX]
+      type = FarmsMaterialRealAux
+      material_property_name = 'normal_x'
+      variable = normal_x
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalY]
+      type = FarmsMaterialRealAux
+      material_property_name = 'normal_y'
+      variable = normal_y
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetTangentX]
+      type = FarmsMaterialRealAux
+      material_property_name = 'tangent_x'
+      variable = tangent_x
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetTangentY]
+      type = FarmsMaterialRealAux
+      material_property_name = 'tangent_y'
+      variable = tangent_y
+      boundary = '__BOUNDARY_LIST__'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+  []
+
+  [Kernels]
+    [./inertia_x]
+      type = InertialForce
+      use_displaced_mesh = false
+      variable = disp_x
+    []
+    [./inertia_y]
+      type = InertialForce
+      use_displaced_mesh = false
+      variable = disp_y
+    []
+    [./Reactionx]
+      type = StiffPropDamping
+      variable = 'disp_x'
+      component = '0'
+    []
+    [./Reactiony]
+      type = StiffPropDamping
+      variable = 'disp_y'
+      component = '1'
+    []
+  []
+
+  [Materials]
+    [elasticity]
+        type = ComputeIsotropicElasticityTensor
+        lambda = ${lambda_o}
+        shear_modulus = ${shear_modulus_o}
+        use_displaced_mesh = false
+    []
+    [stress]
+        type = ComputeLinearElasticStress
+    []
+    [density]
+        type = GenericConstantMaterial
+        prop_names = density
+        prop_values = ${density}
+    []
+    [./czm_mat]
+        type = SlipWeakeningFrictionczm2dParametricStudy
+        disp_slipweakening_x     = disp_slipweakening_x
+        disp_slipweakening_y     = disp_slipweakening_y
+        reaction_slipweakening_x = resid_slipweakening_x
+        reaction_slipweakening_y = resid_slipweakening_y
+        mu_s = mu_s
+        ini_shear_sts = ini_shear_stress
+        boundary = '__BOUNDARY_LIST__'
+    [../]
+  []
+
+  [UserObjects]
+    [recompute_residual_tag]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
+    []
+  []
+
+  [Executioner]
+    type = Transient
+    dt = ${dt}
+    end_time = ${end_time}
+    [TimeIntegrator]
+      type = CentralDifference
+      solve_type = lumped
+    []
+  []
+
+  [Outputs]
+    exodus = true
+    time_step_interval = ${exodus_interval}
+    [csv]
+      type = CSV
+      execute_on = 'timestep_end'
+      time_step_interval = ${csv_interval}
+    []
+  []
+
+  [BCs]
+    [./dashpot_top_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = ${p_wave_speed}
+        shear_wave_speed = ${shear_wave_speed}
+        boundary = top
+    []
+    [./dashpot_top_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = ${p_wave_speed}
+        shear_wave_speed = ${shear_wave_speed}
+        boundary = top
+    []
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = ${p_wave_speed}
+        shear_wave_speed = ${shear_wave_speed}
+        boundary = bottom
+    []
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = ${p_wave_speed}
+        shear_wave_speed = ${shear_wave_speed}
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = ${p_wave_speed}
+        shear_wave_speed = ${shear_wave_speed}
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = ${p_wave_speed}
+        shear_wave_speed = ${shear_wave_speed}
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = ${p_wave_speed}
+        shear_wave_speed = ${shear_wave_speed}
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = ${p_wave_speed}
+        shear_wave_speed = ${shear_wave_speed}
+        boundary = right
+    []
+  []
+
+__VECTORPOSTPROCESSORS__

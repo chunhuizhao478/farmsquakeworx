@@ -1,0 +1,10 @@
+[Tests]
+  [rsf_3d]
+    type = CSVDiff
+    input = test_rsf_3d.i
+    csvdiff = 'test_rsf_3d_out.csv'
+    recover = false
+    mesh_mode = 'REPLICATED'
+    requirement = "RateStateFrictionLaw3D shall compute rate-and-state friction with Newton-Raphson solver on 3D CZM interface."
+  []
+[]

@@ -1,0 +1,10 @@
+[Tests]
+  [sw_czm_3d_cdbm]
+    type = CSVDiff
+    input = test_sw_czm_3d_cdbm.i
+    csvdiff = 'test_sw_czm_3d_cdbm_out.csv'
+    recover = false
+    mesh_mode = 'REPLICATED'
+    requirement = "SlipWeakeningFrictionczm3dCDBM shall compute CDBM-coupled slip weakening friction on 3D CZM interface with forced rupture."
+  []
+[]

@@ -1,0 +1,9 @@
+[Tests]
+  [residual_eval]
+    type = CSVDiff
+    input = test_residual_eval.i
+    csvdiff = 'test_residual_eval_out.csv'
+    recover = false
+    requirement = "ResidualEvaluationUserObject shall recompute residual with latest solution via tagged vectors."
+  []
+[]

@@ -1,0 +1,10 @@
+[Tests]
+  [cdbm_3d_sw]
+    type = CSVDiff
+    input = test_cdbm_3d_sw.i
+    csvdiff = 'test_cdbm_3d_sw_out.csv'
+    recover = false
+    mesh_mode = 'REPLICATED'
+    requirement = "ComputeDamageBreakageStress3DSlipWeakening shall compute damage-breakage stress with slip weakening on 3D mesh."
+  []
+[]

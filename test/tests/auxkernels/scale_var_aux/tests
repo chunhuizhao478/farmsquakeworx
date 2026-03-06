@@ -1,0 +1,8 @@
+[Tests]
+  [scale]
+    type = CSVDiff
+    input = test_scale_var_aux.i
+    csvdiff = 'test_scale_var_aux_out.csv'
+    requirement = "ScaleVarAux shall compute coupled / scale."
+  []
+[]

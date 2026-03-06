@@ -1,0 +1,10 @@
+[Tests]
+  [sw_czm_2d_param]
+    type = CSVDiff
+    input = test_sw_czm_2d_param.i
+    csvdiff = 'test_sw_czm_2d_param_out.csv'
+    recover = false
+    mesh_mode = 'REPLICATED'
+    requirement = "SlipWeakeningFrictionczm2dParametricStudy shall compute slip weakening friction with parametric study options on 2D CZM interface."
+  []
+[]

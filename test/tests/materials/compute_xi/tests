@@ -1,0 +1,8 @@
+[Tests]
+  [compute_xi]
+    type = CSVDiff
+    input = test_compute_xi.i
+    csvdiff = 'test_compute_xi_out.csv'
+    requirement = "ComputeXi shall compute strain invariant ratio xi = I1 / sqrt(I2)."
+  []
+[]

@@ -1,0 +1,9 @@
+[Tests]
+  [dashpot_2d]
+    type = CSVDiff
+    input = test_dashpot_2d.i
+    csvdiff = 'test_dashpot_2d_out.csv'
+    recover = false
+    requirement = "NonReflectDashpotBC shall absorb outgoing waves at 2D boundaries."
+  []
+[]

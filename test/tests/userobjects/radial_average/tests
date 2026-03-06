@@ -1,0 +1,9 @@
+[Tests]
+  [radial_average]
+    type = CSVDiff
+    input = test_radial_average.i
+    csvdiff = 'test_radial_average_out.csv'
+    recover = false
+    requirement = "ElkRadialAverageUpdated and ElkNonlocalEqstrainUpdated shall perform spatial averaging of material properties for nonlocal damage models."
+  []
+[]

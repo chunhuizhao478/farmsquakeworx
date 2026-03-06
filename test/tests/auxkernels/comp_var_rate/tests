@@ -1,0 +1,8 @@
+[Tests]
+  [dot_rate]
+    type = CSVDiff
+    input = test_comp_var_rate.i
+    csvdiff = 'test_comp_var_rate_out.csv'
+    requirement = "CompVarRate shall compute time derivative using coupledDot."
+  []
+[]
