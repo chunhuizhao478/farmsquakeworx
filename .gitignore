@@ -147,6 +147,9 @@ framework/contrib/exodiff/exodiff
 # Large mesh files
 *.msh
 
+# Allow images in devdoc
+!devdoc/*.png
+
 # Mac garbage
 .DS_Store
 *.dSYM
