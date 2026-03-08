@@ -1,5 +1,47 @@
 # CHANGELOG
 
+## v2.1.0 — March 8, 2026
+
+### Added — Stress Tensor Rotation for CZM Materials
+
+- `SlipWeakeningFrictionczm2dParametricStudy` now supports `use_stress_tensor = true` mode, which reads a full `GenericFunctionRankTwoTensor` (`static_initial_stress_tensor_slipweakening`) and rotates the global stress tensor to fault-local coordinates (`sigma_local = R^T * sigma_global * R`) to extract initial shear/normal tractions per fault orientation
+- 12 new GoogleTest cases in `unit/src/StressTensorRotationTest.C` covering horizontal/vertical/angled faults, consistency with direct approach, isotropic/pure-shear stress states, nucleation patch override, and rotation trace preservation
+
+### Added — Fault Initial Stress Analysis
+
+- Pipeline now evaluates and reports the initial stress state on each fault segment at generation time: local shear traction, local normal traction, shear strength (|sigma_n| * mu_s), and whether the fault would slip under background stress alone
+- Warning message displayed when any fault is initially unstable, prompting the user to verify `initial_stress_tensor` and `mu_s` values
+
+### Added — Pipeline Progress Reporting
+
+- `generate_multifault.py` now prints step-by-step progress (`[1/6]` through `[6/6]`) with per-fault element counts during generation
+
+### Added — `build_param_block` Unit Tests
+
+- 5 new tests in `TestParamBlock`: verifies stress tensor values stay out of MOOSE param block, `len` derived from `element_size`, wave speeds computed from material properties, nucleation params present, `mu_s` excluded from params
+
+### Changed — Simplified JSON Configuration
+
+- Removed `initial_shear_stress` section — shear stress functions now derived from `initial_stress_tensor.stress_xy` and nucleation patches
+- Removed `len` from `physics` — derived from `domain.element_size`
+- Removed `boundary_conditions` (p_wave_speed, shear_wave_speed) — computed from `density`, `lambda_o`, `shear_modulus_o`: Vp = sqrt((lambda + 2*mu) / rho), Vs = sqrt(mu / rho)
+- Template updated with `GenericFunctionRankTwoTensor` material and nucleation parameters in `czm_mat` block
+
+### Fixed — MOOSE Unused Parameter Error
+
+- Removed `stress_xx`, `stress_xy`, `stress_yy` from `build_param_block()` — these values are baked into the Functions block by `build_functions_block()`, so declaring them as MOOSE `${var}` parameters caused an "unused parameter" error
+
+### Fixed — CZMRealVectorCartesianComponent Stateful Properties Warning
+
+- `FarmsMaterialRealAux` no longer requests `getMaterialPropertyOldByName("jump_x"/"jump_y")` unconditionally — this was promoting MOOSE's `CZMRealVectorCartesianComponent` properties to stateful, triggering a warning since that class does not override `initQpStatefulProperties()`
+- Jump rate computation now uses a coupled AuxVariable (`local_jump_for_rate`) with `coupledValueOld` instead, keeping CZM output properties non-stateful
+
+### Fixed — Spurious Elements Beyond Fault Endpoints
+
+- Tightened element extraction in `extract_fault_elements()` — elements whose centroid projects beyond the fault start/end points are now excluded, preventing misaligned fault segments near fault tips and junctions
+
+---
+
 ## v2.0.0 — March 6, 2026
 
 ### Highlights

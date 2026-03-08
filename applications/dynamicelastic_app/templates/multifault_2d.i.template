@@ -38,7 +38,6 @@ __PARAM_BLOCK__
     displacements = 'disp_x disp_y'
     q = ${q}
     Dc = ${Dc}
-    T2_o = ${T2_o}
     mu_d = ${mu_d}
     len = ${len}
   []
@@ -248,6 +247,7 @@ __FUNCTIONS_BLOCK__
       boundary = '__BOUNDARY_LIST__'
       ini_normal_sts = ini_normal_stress
       ini_shear_sts = ini_shear_stress
+      local_jump_for_rate = local_shear_jump
     []
     [GetNormalJumpRate]
       type = FarmsMaterialRealAux
@@ -256,6 +256,7 @@ __FUNCTIONS_BLOCK__
       boundary = '__BOUNDARY_LIST__'
       ini_normal_sts = ini_normal_stress
       ini_shear_sts = ini_shear_stress
+      local_jump_for_rate = local_normal_jump
     []
     [GetShearTraction]
       type = FarmsMaterialRealAux
@@ -345,6 +346,14 @@ __FUNCTIONS_BLOCK__
         prop_names = density
         prop_values = ${density}
     []
+    [./static_initial_stress_tensor_slipweakening]
+        type = GenericFunctionRankTwoTensor
+        tensor_name = static_initial_stress_tensor_slipweakening
+        tensor_functions = 'func_initial_stress_xx func_initial_stress_xy func_zero
+                            func_initial_stress_xy func_initial_stress_yy func_zero
+                            func_zero              func_zero              func_initial_stress_yy'
+        boundary = '__BOUNDARY_LIST__'
+    [../]
     [./czm_mat]
         type = SlipWeakeningFrictionczm2dParametricStudy
         disp_slipweakening_x     = disp_slipweakening_x
@@ -352,7 +361,10 @@ __FUNCTIONS_BLOCK__
         reaction_slipweakening_x = resid_slipweakening_x
         reaction_slipweakening_y = resid_slipweakening_y
         mu_s = mu_s
-        ini_shear_sts = ini_shear_stress
+        use_stress_tensor = true
+        peak_shear_stress = ${peak_shear_stress}
+        nucl_center = '${nucl_center_x} ${nucl_center_y} 0'
+        nucl_radius = ${nucl_radius}
         boundary = '__BOUNDARY_LIST__'
     [../]
   []

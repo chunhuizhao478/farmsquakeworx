@@ -33,12 +33,14 @@ protected:
   const MaterialProperty<Real> & _displacement_jump_global_y;
   const MaterialProperty<Real> & _traction_global_x;
   const MaterialProperty<Real> & _traction_global_y;
-  const MaterialProperty<Real> & _displacement_jump_global_x_old;
-  const MaterialProperty<Real> & _displacement_jump_global_y_old;
   const MaterialProperty<Real> & _total_shear_traction;
 
   const VariableValue & _ini_shear_sts;
   const VariableValue & _ini_normal_sts;
+
+  /// Optional: old local jump value for rate computation (avoids stateful CZM properties)
+  bool _has_local_jump_for_rate;
+  const VariableValue * _local_jump_for_rate_old;
 
   /// normals at quadrature points
   const MooseArray<Point> & _normals;

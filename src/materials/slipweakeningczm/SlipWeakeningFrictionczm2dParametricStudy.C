@@ -21,7 +21,7 @@ SlipWeakeningFrictionczm2dParametricStudy::validParams()
 {
   InputParameters params = CZMComputeLocalTractionTotalBase::validParams();
   params.addClassDescription("linear slip weakening traction separation law.");
-  params.addRequiredParam<Real>("T2_o", "background normal traction");
+  params.addParam<Real>("T2_o", 0.0, "background normal traction (used when use_stress_tensor=false)");
   params.addRequiredParam<Real>("mu_d", "value of dynamic friction parameter");
   params.addRequiredParam<Real>("Dc", "value of characteristic length");
   params.addRequiredParam<Real>("len", "element edge length");
@@ -30,12 +30,16 @@ SlipWeakeningFrictionczm2dParametricStudy::validParams()
   params.addRequiredCoupledVar("reaction_slipweakening_x", "reaction in x dir");
   params.addRequiredCoupledVar("reaction_slipweakening_y", "reaction in y dir");
   params.addRequiredCoupledVar("mu_s", "static friction coefficient spatial distribution");
-  params.addRequiredCoupledVar("ini_shear_sts", "initial shear stress spatial distribution");
+  params.addCoupledVar("ini_shear_sts", "initial shear stress spatial distribution (used when use_stress_tensor=false)");
   //add parametric study
   params.addParam<bool>("use_fractal_shear_stress", false, "use fractal shear stress");
-  params.addParam<Real>("peak_shear_stress", 0.0, "peak shear stress");
+  params.addParam<Real>("peak_shear_stress", 0.0, "peak shear stress for nucleation patch");
   params.addParam<std::vector<Real>>("nucl_center", std::vector<Real>{0, 0, 0}, "nucleation center");
   params.addParam<Real>("nucl_radius", 0.0, "nucleation radius");
+  // Background stress tensor mode
+  params.addParam<bool>("use_stress_tensor", false,
+      "if true, read background stress from static_initial_stress_tensor_slipweakening "
+      "material property and rotate to fault-local coordinates");
   return params;
 }
 
@@ -60,13 +64,15 @@ SlipWeakeningFrictionczm2dParametricStudy::SlipWeakeningFrictionczm2dParametricS
     _disp_slipweakening_y_old(coupledValueOld("disp_slipweakening_y")),
     _disp_slipweakening_neighbor_y_old(coupledNeighborValueOld("disp_slipweakening_y")),
     _mu_s(coupledValue("mu_s")),
-    _ini_shear_sts(coupledValue("ini_shear_sts")),
+    _ini_shear_sts(isCoupled("ini_shear_sts") ? coupledValue("ini_shear_sts") : _zero),
     _elem_normal(declareProperty<RealVectorValue>("elem_normal")),
     _total_shear_traction(declareProperty<Real>("total_shear_traction")),
     _use_fractal_shear_stress(getParam<bool>("use_fractal_shear_stress")),
     _peak_shear_stress(getParam<Real>("peak_shear_stress")),
     _nucl_center(getParam<std::vector<Real>>("nucl_center")),
-    _nucl_radius(getParam<Real>("nucl_radius"))
+    _nucl_radius(getParam<Real>("nucl_radius")),
+    _use_stress_tensor(getParam<bool>("use_stress_tensor")),
+    _sts_init(nullptr)
 {
 
   // only works for small strain
@@ -78,6 +84,17 @@ SlipWeakeningFrictionczm2dParametricStudy::SlipWeakeningFrictionczm2dParametricS
   // Only retrieve the fractal shear stress material property if requested
   if (_use_fractal_shear_stress)
     _fractal_shear_stress = &getMaterialPropertyByName<Real>("fractal_shear_stress");
+
+  // Retrieve the background stress tensor if requested
+  if (_use_stress_tensor)
+    _sts_init = &getMaterialPropertyByName<RankTwoTensor>(
+        _base_name + "static_initial_stress_tensor_slipweakening");
+
+  // Validate: when not using stress tensor, ini_shear_sts must be coupled
+  if (!_use_stress_tensor && !_use_fractal_shear_stress && !isCoupled("ini_shear_sts"))
+    paramError("ini_shear_sts",
+               "ini_shear_sts must be coupled when use_stress_tensor=false and "
+               "use_fractal_shear_stress=false");
 
 }
 
@@ -137,14 +154,40 @@ SlipWeakeningFrictionczm2dParametricStudy::computeInterfaceTractionAndDerivative
 
   // Compute T1_o, T2_o for current qp
   Real T1_o = 0.0;
-  Real T2_o = _T2_o;
+  Real T2_o = 0.0;
 
   // Get point location
   Real x_coord = _q_point[_qp](0);
   Real y_coord = _q_point[_qp](1);
 
-  if (_use_fractal_shear_stress){
+  if (_use_stress_tensor)
+  {
+    // Rotate global stress tensor to fault-local coordinates
+    // sigma_local = R^T * sigma_global * R
+    RankTwoTensor sts_init_local = _rot[_qp].transpose() * (*_sts_init)[_qp] * _rot[_qp];
 
+    // Extract traction vector on fault plane: traction = sigma_local * n_local
+    // In CZM local coords: component(0) = normal, component(1) = tangential
+    RealVectorValue local_normal(1.0, 0.0, 0.0);
+    RealVectorValue traction_local = sts_init_local * local_normal;
+
+    // Sign convention:
+    //   Global: tension +, compression -, clockwise shear +
+    //   Local:  compression +, shear same as global
+    T1_o = traction_local(1);   // shear traction: same sign convention, no flip
+    T2_o = -traction_local(0);  // normal traction: flip for compression-positive
+
+    // Nucleation patch override (independent of stress tensor)
+    if (_nucl_radius > 0.0 &&
+        x_coord > _nucl_center[0] - _nucl_radius && x_coord < _nucl_center[0] + _nucl_radius &&
+        y_coord > _nucl_center[1] - _nucl_radius && y_coord < _nucl_center[1] + _nucl_radius)
+    {
+      T1_o = _peak_shear_stress;
+    }
+  }
+  else if (_use_fractal_shear_stress)
+  {
+    T2_o = _T2_o;
     T1_o = (*_fractal_shear_stress)[_qp];
 
     // nucleate rupture patch
@@ -153,9 +196,10 @@ SlipWeakeningFrictionczm2dParametricStudy::computeInterfaceTractionAndDerivative
     {
       T1_o = _peak_shear_stress;
     }
-
   }
-  else{
+  else
+  {
+    T2_o = _T2_o;
     T1_o = _ini_shear_sts[_qp];
   }
 

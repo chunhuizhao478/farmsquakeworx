@@ -341,14 +341,87 @@ def validate_config(config):
                         f"Increase the separation between faults or reduce element_size."
                     )
 
-    # Initial shear stress patches validation (done by InitialShearStressFunction)
-    if "initial_shear_stress" in config:
-        iss = config["initial_shear_stress"]
-        InitialShearStressFunction(
-            iss.get("background", 0.0),
-            iss.get("patches", []),
-            domain=domain,
-        )
+    # Validate initial_stress_tensor if provided
+    if "initial_stress_tensor" in config:
+        ist = config["initial_stress_tensor"]
+        for comp in ("stress_xx", "stress_xy", "stress_yy"):
+            if comp not in ist:
+                raise ValueError(
+                    f"Missing required field: 'initial_stress_tensor.{comp}'. "
+                    f"Specify all three 2D stress components (stress_xx, stress_xy, stress_yy)."
+                )
+
+
+def evaluate_fault_initial_stress(config):
+    """Evaluate initial stress state on each fault and report slip potential.
+
+    For each fault segment, rotates the global background stress tensor into
+    fault-local coordinates and compares shear traction against frictional
+    strength (|sigma_n| * mu_s).
+
+    Returns True if all faults are stable, False if any would slip initially.
+    """
+    ist = config.get("initial_stress_tensor", {})
+    sxx = ist.get("stress_xx", 0.0)
+    sxy = ist.get("stress_xy", 0.0)
+    syy = ist.get("stress_yy", 0.0)
+    mu_s = config["physics"]["mu_s"]
+    faults = config["faults"]
+
+    print("\n  Fault Initial Stress Analysis (background stress tensor)")
+    print("  " + "-" * 86)
+    print(f"  {'Fault':<12} {'Shear (MPa)':>14} {'Normal (MPa)':>14} "
+          f"{'Strength (MPa)':>16} {'Slip?':>8}")
+    print("  " + "-" * 86)
+
+    any_slip = False
+    for fault in faults:
+        label = fault["label"]
+        sx, sy = fault["start"]
+        ex, ey = fault["end"]
+
+        # Fault tangent and normal vectors
+        dx, dy = ex - sx, ey - sy
+        length = math.sqrt(dx * dx + dy * dy)
+        tx, ty = dx / length, dy / length
+        # Normal: 90-degree CCW rotation of tangent
+        nx, ny = -ty, tx
+
+        # Traction on fault plane: t_i = sigma_ij * n_j
+        tn_x = sxx * nx + sxy * ny
+        tn_y = sxy * nx + syy * ny
+
+        # Resolve into normal and shear components
+        sigma_n = tn_x * nx + tn_y * ny   # normal traction (compression < 0)
+        tau = tn_x * tx + tn_y * ty       # shear traction
+
+        # Shear strength (Coulomb): mu_s * |sigma_n| (only if compressive)
+        if sigma_n < 0:
+            strength = mu_s * abs(sigma_n)
+        else:
+            strength = 0.0  # tensile normal -> no frictional resistance
+
+        will_slip = abs(tau) >= strength
+        if will_slip:
+            any_slip = True
+
+        slip_str = "YES" if will_slip else "no"
+        print(f"  {label:<12} {tau / 1e6:>14.2f} {sigma_n / 1e6:>14.2f} "
+              f"{strength / 1e6:>16.2f} {slip_str:>8}")
+
+    print("  " + "-" * 86)
+
+    if any_slip:
+        print("\n  *** Warning ***")
+        print("  One or more faults will slip under the background stress alone.")
+        print("  Please double check your initial_stress_tensor and mu_s values.")
+        print("  Faults should generally be stable (|tau| < mu_s * |sigma_n|)")
+        print("  with slip initiated only by the nucleation patch.\n")
+    else:
+        print(f"\n  All faults are stable under background stress "
+              f"(|tau| < mu_s * |sigma_n|).\n")
+
+    return not any_slip
 
 
 # ---------------------------------------------------------------------------
@@ -549,11 +622,26 @@ def extract_fault_elements(msh_path, faults):
             coords_y = m.points[elem_connect][:, 1]
             centroid = np.array([np.mean(coords_x), np.mean(coords_y)])
 
-            # Corridor check: project centroid onto fault direction
+            # Project ALL element vertices onto the fault direction
+            # Reject elements that extend beyond the fault endpoints
+            vertex_projs = []
+            for vi in range(len(elem_connect)):
+                vpt = np.array([coords_x[vi], coords_y[vi]])
+                vertex_projs.append(np.dot(vpt - start, d_hat))
+
+            # Element must have at least one vertex within the fault span
+            # AND no vertex projecting far beyond the endpoints
+            v_min = min(vertex_projs)
+            v_max = max(vertex_projs)
+            elem_tol = d_len * 0.005  # tight tolerance (0.5% of fault length)
+            if v_max < -elem_tol or v_min > d_len + elem_tol:
+                continue
+
+            # Centroid-based endpoint check: reject elements whose centroid
+            # projects beyond the fault endpoints
             v = centroid - start
             proj = np.dot(v, d_hat)
-            tol = d_len * 0.01  # 1% tolerance
-            if proj < -tol or proj > d_len + tol:
+            if proj < 0 or proj > d_len:
                 continue
 
             # Upper/lower classification by normal dot product
@@ -642,24 +730,54 @@ def sort_fault_elements(mesh_obj, faults, fault_elements):
 def build_functions_block(config):
     """Build the [Functions] block text from config."""
     physics = config["physics"]
+    ist = config.get("initial_stress_tensor", {})
+    nucl = config.get("nucleation", {})
 
     friction_func = StaticFrictionFunction(physics["mu_s"])
 
-    iss = config.get("initial_shear_stress", {})
-    background = iss.get("background", 70.0e6)
-    patches = iss.get("patches", [])
+    # Derive shear/normal stress functions from stress tensor for FarmsMaterialRealAux
+    background_shear = ist.get("stress_xy", 70e6)
+    patches = []
+    if nucl.get("radius", 0) > 0:
+        center = nucl.get("center", [0, 0])
+        r = nucl["radius"]
+        patches.append({
+            "xmin": center[0] - r,
+            "xmax": center[0] + r,
+            "ymin": center[1] - r,
+            "ymax": center[1] + r,
+            "value": nucl.get("peak_shear_stress", background_shear),
+            "label": "nucleation",
+        })
     stress_func = InitialShearStressFunction(
-        background, patches, domain=config.get("domain")
+        background_shear, patches, domain=config.get("domain")
     )
 
     lines = ["[Functions]"]
     lines.append(friction_func.to_moose_block())
     lines.append(stress_func.to_moose_block())
-    # Normal stress function uses T2_o (negative sign convention)
-    T2_o = physics.get("T2_o", 120e6)
+    # Normal stress from stress tensor (stress_yy) for FarmsMaterialRealAux
     lines.append("  [func_initial_normal_stress]")
     lines.append("    type = ConstantFunction")
-    lines.append(f"    value = {-float(T2_o):.10g}")
+    lines.append(f"    value = {float(ist.get('stress_yy', -120e6)):.10g}")
+    lines.append("  []")
+    # Background stress tensor component functions
+    lines.append("  # Background stress tensor components (for stress tensor rotation mode)")
+    lines.append("  [func_initial_stress_xx]")
+    lines.append("    type = ConstantFunction")
+    lines.append(f"    value = {float(ist.get('stress_xx', -120e6)):.10g}")
+    lines.append("  []")
+    lines.append("  [func_initial_stress_xy]")
+    lines.append("    type = ConstantFunction")
+    lines.append(f"    value = {float(background_shear):.10g}")
+    lines.append("  []")
+    lines.append("  [func_initial_stress_yy]")
+    lines.append("    type = ConstantFunction")
+    lines.append(f"    value = {float(ist.get('stress_yy', -120e6)):.10g}")
+    lines.append("  []")
+    lines.append("  [func_zero]")
+    lines.append("    type = ConstantFunction")
+    lines.append("    value = 0.0")
     lines.append("  []")
     lines.append("[]")
     return "\n".join(lines)
@@ -693,16 +811,31 @@ def build_param_block(config):
     physics = config["physics"]
     execution = config["execution"]
     output = config["output"]
-    bc = config.get("boundary_conditions", {})
+    ist = config.get("initial_stress_tensor", {})
+    nucl = config.get("nucleation", {})
 
-    # Exclude keys consumed by Functions block (not used as ${var} in template)
-    skip_physics = {"mu_s"}
+    # Exclude keys consumed by Functions block or stress tensor (not used as ${var} in template)
+    skip_physics = {"mu_s", "T2_o", "len"}
     params = {}
     params.update({k: v for k, v in physics.items() if k not in skip_physics})
+    # len = element_size (same quantity, avoid duplication in config)
+    params["len"] = config["domain"]["element_size"]
+    # Compute wave speeds from material properties: Vp = sqrt((lambda + 2*mu) / rho), Vs = sqrt(mu / rho)
+    rho = physics["density"]
+    lam = physics["lambda_o"]
+    mu = physics["shear_modulus_o"]
+    params["p_wave_speed"] = math.sqrt((lam + 2 * mu) / rho)
+    params["shear_wave_speed"] = math.sqrt(mu / rho)
     params.update(execution)
-    params.update(bc)
     params["exodus_interval"] = output.get("exodus_interval", 40)
     params["csv_interval"] = output.get("csv_interval", params.get("exodus_interval", 40))
+
+    # Nucleation parameters (used in czm_mat block)
+    params["peak_shear_stress"] = nucl.get("peak_shear_stress", 81.6e6)
+    nucl_center = nucl.get("center", [-8000, 0])
+    params["nucl_center_x"] = nucl_center[0]
+    params["nucl_center_y"] = nucl_center[1]
+    params["nucl_radius"] = nucl.get("radius", 1500)
 
     lines = ["#parameters (auto-generated from JSON config)", ""]
     for key, value in sorted(params.items()):
@@ -810,11 +943,20 @@ def render_input_file(template_path, config, mesh_data, msh_path):
 
 def run_pipeline(config_path, output_dir=None, dry_run=False):
     """Run the full multi-fault pipeline."""
+    n_faults = "?"
+
+    def _step(step_num, total, msg):
+        print(f"[{step_num}/{total}] {msg}")
+
     with open(config_path, "r") as f:
         config = json.load(f)
+    n_faults = len(config.get("faults", []))
 
     # Step 1: Validate
+    _step(1, 6, f"Validating config ({n_faults} faults)...")
     validate_config(config)
+    evaluate_fault_initial_stress(config)
+    _step(1, 6, "Config validated OK")
 
     if output_dir is None:
         output_dir = os.path.join(SCRIPT_DIR, "2d_slipweakening_multifaults")
@@ -826,13 +968,17 @@ def run_pipeline(config_path, output_dir=None, dry_run=False):
     if msh_path is None:
         geo_path = os.path.join(output_dir, "output.geo")
         msh_path = os.path.join(output_dir, "output.msh")
+        _step(2, 6, f"Generating .geo file: {geo_path}")
         geo_content = generate_geo(config, geo_path)
+        _step(2, 6, "Generated .geo OK")
         if dry_run:
             print("=== Generated .geo ===")
             print(geo_content)
             print(f"# Would write .geo to: {geo_path}", file=sys.stderr)
         if not dry_run:
+            _step(3, 6, f"Running Gmsh: {geo_path} -> {msh_path}")
             run_gmsh(geo_path, msh_path)
+            _step(3, 6, "Gmsh meshing OK")
         else:
             # In dry-run mode, show what would happen but can't proceed without mesh
             print(f"\n# Would run: gmsh -2 {geo_path} -o {msh_path} -format msh2",
@@ -867,14 +1013,26 @@ def run_pipeline(config_path, output_dir=None, dry_run=False):
             print("\n=== Generated .i (dry-run, no mesh) ===")
             print(result)
             return
+    else:
+        _step(2, 6, f"Using existing mesh: {msh_path}")
+        _step(3, 6, "Skipped Gmsh (mesh_file provided)")
 
     # Step 4: Extract elements
+    _step(4, 6, "Extracting fault elements from mesh...")
     fault_elements, mesh_obj = extract_fault_elements(msh_path, config["faults"])
+    for label, fe in fault_elements.items():
+        n_upper = len(fe["upper"])
+        n_lower = len(fe["lower"])
+        print(f"       {label}: {n_upper} upper + {n_lower} lower elements")
+    _step(4, 6, "Fault element extraction OK")
 
     # Step 5: Sort elements
+    _step(5, 6, "Sorting fault elements by subdomain...")
     sorted_elem_ids = sort_fault_elements(mesh_obj, config["faults"], fault_elements)
+    _step(5, 6, "Fault element sorting OK")
 
     # Step 6: Render .i file
+    _step(6, 6, "Rendering MOOSE input file...")
     mesh_data = build_mesh_data(config, fault_elements)
     template_path = os.path.join(TEMPLATES_DIR, "multifault_2d.i.template")
 
@@ -893,7 +1051,9 @@ def run_pipeline(config_path, output_dir=None, dry_run=False):
     else:
         with open(output_i_path, "w") as f:
             f.write(rendered)
-        print(f"Generated: {output_i_path}")
+
+    _step(6, 6, f"Generated: {output_i_path}")
+    print(f"\nPipeline complete: {n_faults} faults -> {output_i_path}")
 
     return rendered
 

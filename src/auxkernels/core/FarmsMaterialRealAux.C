@@ -20,6 +20,7 @@ FarmsMaterialRealAux::validParams()
   params.addRequiredParam<std::string>("material_property_name", "The name of the material property to be retrieved: local_shear_jump, local_normal_jump, local_shear_traction, local_normal_traction, local_shear_jump_rate, local_normal_jump_rate, normal_x, normal_y, tangent_x, tangent_y");
   params.addRequiredCoupledVar("ini_shear_sts", "initial shear stress");
   params.addRequiredCoupledVar("ini_normal_sts", "initial normal stress");
+  params.addCoupledVar("local_jump_for_rate", "Local jump AuxVariable whose old value is used for rate computation");
   return params;
 }
 
@@ -30,13 +31,18 @@ FarmsMaterialRealAux::FarmsMaterialRealAux(const InputParameters & parameters)
   _displacement_jump_global_y(getMaterialPropertyByName<Real>("jump_y")),
   _traction_global_x(getMaterialPropertyByName<Real>("traction_x")),
   _traction_global_y(getMaterialPropertyByName<Real>("traction_y")),
-  _displacement_jump_global_x_old(getMaterialPropertyOldByName<Real>("jump_x")),
-  _displacement_jump_global_y_old(getMaterialPropertyOldByName<Real>("jump_y")),
   _total_shear_traction(getMaterialPropertyByName<Real>("total_shear_traction")),
   _ini_shear_sts(coupledValue("ini_shear_sts")),
   _ini_normal_sts(coupledValue("ini_normal_sts")),
+  _has_local_jump_for_rate(isCoupled("local_jump_for_rate")),
+  _local_jump_for_rate_old(_has_local_jump_for_rate ? &coupledValueOld("local_jump_for_rate") : nullptr),
   _normals(_assembly.normals())
 {
+  if ((_material_property_name == "local_shear_jump_rate" ||
+       _material_property_name == "local_normal_jump_rate") &&
+      !_has_local_jump_for_rate)
+    paramError("local_jump_for_rate",
+               "local_jump_for_rate must be coupled when computing jump rates");
 }
 
 Real
@@ -55,9 +61,6 @@ FarmsMaterialRealAux::computeValue()
 
   Real jump_x = -1 * _displacement_jump_global_x[_qp];
   Real jump_y = -1 * _displacement_jump_global_y[_qp];
-
-  Real jump_x_old = -1 * _displacement_jump_global_x_old[_qp];
-  Real jump_y_old = -1 * _displacement_jump_global_y_old[_qp];
 
   /*
   * The traction has units: MPa (change, not total)
@@ -81,17 +84,11 @@ FarmsMaterialRealAux::computeValue()
   Real tangent_y = -1 * normal_x;
 
   /*
-  * We compute local jump, jump rate, traction in the local coordinate system
+  * We compute local jump, traction in the local coordinate system
   */
 
   Real local_jump_x = jump_x * tangent_x + jump_y * tangent_y;
   Real local_jump_y = jump_x * normal_x  + jump_y * normal_y;
-
-  Real local_jump_x_old = jump_x_old * tangent_x + jump_y_old * tangent_y;
-  Real local_jump_y_old = jump_x_old * normal_x  + jump_y_old * normal_y;
-
-  Real local_jump_rate_x = (local_jump_x - local_jump_x_old) / _dt;
-  Real local_jump_rate_y = (local_jump_y - local_jump_y_old) / _dt;
 
   Real local_traction_x = traction_x * tangent_x + traction_y * tangent_y;
   Real local_traction_y = traction_x * normal_x  + traction_y * normal_y;
@@ -111,11 +108,13 @@ FarmsMaterialRealAux::computeValue()
   }
   else if (_material_property_name == "local_shear_jump_rate")
   {
-    _value = local_jump_rate_x;
+    // Rate = (current_local_jump - old_local_jump) / dt
+    // Old value comes from coupled AuxVariable (previous timestep)
+    _value = (local_jump_x - (*_local_jump_for_rate_old)[_qp]) / _dt;
   }
   else if (_material_property_name == "local_normal_jump_rate")
   {
-    _value = local_jump_rate_y;
+    _value = (local_jump_y - (*_local_jump_for_rate_old)[_qp]) / _dt;
   }
   else if (_material_property_name == "local_shear_traction")
   {

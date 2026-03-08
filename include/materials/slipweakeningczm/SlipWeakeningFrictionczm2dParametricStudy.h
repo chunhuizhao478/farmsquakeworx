@@ -67,4 +67,10 @@ protected:
   /// nucleation radius
   Real _nucl_radius;
 
+  // Background stress tensor mode
+  /// if true, read background stress tensor and rotate to fault-local coordinates
+  bool _use_stress_tensor;
+  /// background stress tensor in global coordinates
+  const MaterialProperty<RankTwoTensor> * _sts_init;
+
 };

@@ -25,6 +25,7 @@ from generate_multifault import (
     _rectangles_overlap,
     _segments_intersect,
     build_functions_block,
+    build_param_block,
     build_vectorpostprocessors,
     generate_geo,
     get_block_pairs_string,
@@ -55,23 +56,26 @@ def _make_base_config(**overrides):
                 "end": [12000, 0.0],
             }
         ],
-        "initial_shear_stress": {
-            "background": 70.0e6,
-            "patches": [],
+        "initial_stress_tensor": {
+            "stress_xx": -120e6,
+            "stress_xy": 70e6,
+            "stress_yy": -120e6,
+        },
+        "nucleation": {
+            "peak_shear_stress": 81.6e6,
+            "center": [-8000, 0],
+            "radius": 1500,
         },
         "physics": {
             "q": 0.1,
             "Dc": 0.4,
-            "T2_o": 120e6,
             "mu_s": 0.677,
             "mu_d": 0.525,
-            "len": 100,
             "density": 2670,
             "lambda_o": 3.204e10,
             "shear_modulus_o": 3.204e10,
         },
         "execution": {"dt": 0.0025, "end_time": 12},
-        "boundary_conditions": {"p_wave_speed": 6000, "shear_wave_speed": 3464},
         "output": {"exodus_interval": 40},
         "mesh_file": None,
     }
@@ -671,24 +675,27 @@ class TestIntegration(unittest.TestCase):
             "faults": [
                 {"label": "fault_1", "start": [-12000, 0.0], "end": [12000, 0.0]}
             ],
-            "initial_shear_stress": {
-                "background": 70e6,
-                "patches": [],
+            "initial_stress_tensor": {
+                "stress_xx": -120e6,
+                "stress_xy": 70e6,
+                "stress_yy": -120e6,
+            },
+            "nucleation": {
+                "peak_shear_stress": 81.6e6,
+                "center": [-8000, 0],
+                "radius": 1500,
             },
             "physics": {
                 "q": 0.2,
                 "Dc": 0.4,
-                "T2_o": 120e6,
                 "mu_s": 0.677,
                 "mu_d": 0.525,
-                "len": 200,
                 "density": 2670,
                 "lambda_o": 3.204e10,
                 "shear_modulus_o": 3.204e10,
             },
             "execution": {"dt": 0.01, "end_time": 12},
-            "boundary_conditions": {"p_wave_speed": 6000, "shear_wave_speed": 3464},
-            "output": {"exodus_interval": 10},
+                "output": {"exodus_interval": 10},
             "mesh_file": None,
         }
         tmp_config = os.path.join(self.tmpdir, "config.json")
@@ -700,6 +707,71 @@ class TestIntegration(unittest.TestCase):
         self.assertNotIn("__", rendered)
         self.assertIn("Block100_Block200", rendered)
         self.assertNotIn("Block300", rendered)  # only 1 fault
+
+
+class TestParamBlock(unittest.TestCase):
+    """Tests for build_param_block: derived parameters and no unused declarations."""
+
+    def test_no_stress_tensor_params_in_output(self):
+        """Stress tensor values are baked into Functions, not declared as MOOSE variables."""
+        config = _make_base_config()
+        param_block = build_param_block(config)
+        for key in ("stress_xx", "stress_xy", "stress_yy"):
+            self.assertNotIn(
+                f"{key} =",
+                param_block,
+                f"{key} should not appear in param block (consumed by Functions block)",
+            )
+
+    def test_len_derived_from_element_size(self):
+        """len should equal domain.element_size, not come from physics."""
+        config = _make_base_config()
+        config["domain"]["element_size"] = 200
+        param_block = build_param_block(config)
+        self.assertIn("len = 200", param_block)
+
+    def test_wave_speeds_computed_from_material_properties(self):
+        """p_wave_speed and shear_wave_speed derived from lambda, mu, density."""
+        import math
+
+        config = _make_base_config()
+        rho = config["physics"]["density"]
+        lam = config["physics"]["lambda_o"]
+        mu = config["physics"]["shear_modulus_o"]
+        expected_vp = math.sqrt((lam + 2 * mu) / rho)
+        expected_vs = math.sqrt(mu / rho)
+
+        param_block = build_param_block(config)
+        self.assertIn("p_wave_speed", param_block)
+        self.assertIn("shear_wave_speed", param_block)
+        # Parse the actual values from the block
+        for line in param_block.splitlines():
+            if line.startswith("p_wave_speed"):
+                val = float(line.split("=")[1].strip())
+                self.assertAlmostEqual(val, expected_vp, places=1)
+            elif line.startswith("shear_wave_speed"):
+                val = float(line.split("=")[1].strip())
+                self.assertAlmostEqual(val, expected_vs, places=1)
+
+    def test_nucleation_params_present(self):
+        """Nucleation parameters should be declared for the czm_mat block."""
+        config = _make_base_config()
+        param_block = build_param_block(config)
+        self.assertIn("peak_shear_stress", param_block)
+        self.assertIn("nucl_center_x", param_block)
+        self.assertIn("nucl_center_y", param_block)
+        self.assertIn("nucl_radius", param_block)
+
+    def test_mu_s_not_in_params(self):
+        """mu_s is consumed by Functions block, not declared as a MOOSE variable."""
+        config = _make_base_config()
+        param_block = build_param_block(config)
+        # mu_s should NOT appear as a top-level MOOSE variable
+        for line in param_block.splitlines():
+            self.assertFalse(
+                line.strip().startswith("mu_s ="),
+                "mu_s should not be in param block (used in Functions block)",
+            )
 
 
 if __name__ == "__main__":

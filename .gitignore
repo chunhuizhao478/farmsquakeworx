@@ -147,6 +147,10 @@ framework/contrib/exodiff/exodiff
 # Large mesh files
 *.msh
 
+# Generated multi-fault pipeline output
+applications/dynamicelastic_app/2d_slipweakening_multifaults/multifault_2d.i
+applications/dynamicelastic_app/2d_slipweakening_multifaults/output.geo
+
 # Allow images in devdoc
 !devdoc/*.png
 
