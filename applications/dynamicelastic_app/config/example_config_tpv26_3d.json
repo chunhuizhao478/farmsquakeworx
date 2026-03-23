@@ -1,0 +1,59 @@
+{
+    "benchmark": "tpv26_3d",
+    "overrides": {
+        "material": {
+            "density": 2670,
+            "lambda_o": 3.204e10,
+            "shear_modulus_o": 3.204e10
+        },
+        "slip_weakening": {
+            "q": 0.4,
+            "Dc": 0.3,
+            "mu_s": 0.18,
+            "mu_d": 0.12,
+            "len": 100
+        },
+        "mesh": {
+            "mesh_file": "../mesh/tpv26_400m.msh",
+            "elem_size": 100,
+            "xmin_fault": -20000,
+            "xmax_fault": 20000,
+            "zmin_fault": -20000
+        },
+        "initial_stress": {
+            "fluid_density": 1000,
+            "gravity": 9.8,
+            "bxx": 0.926793,
+            "byy": 1.073206,
+            "bxy": -0.169029
+        },
+        "cohesion": {
+            "cohesion_depth": 5000,
+            "cohesion_slope": 0.00072,
+            "cohesion_min": 0.4
+        },
+        "nucleation": {
+            "nucl_center_x": -5000,
+            "nucl_center_y": 0,
+            "nucl_center_z": -10000,
+            "r_crit": 4000,
+            "Vs": 3464,
+            "t0": 0.5
+        },
+        "tapering": {
+            "use_tapering": true,
+            "tapering_depth_A": 15000,
+            "tapering_depth_B": 20000
+        },
+        "execution": {
+            "dt": 0.0025,
+            "end_time": 12
+        },
+        "output": {
+            "exodus_interval": 40,
+            "csv_interval": 40,
+            "checkpoint_interval": 40,
+            "checkpoint_num_files": 2
+        }
+    }
+}

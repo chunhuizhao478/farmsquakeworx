@@ -1,0 +1,9 @@
+{
+    "benchmark": "tpv14_2d",
+    "mesh_variant": "tria",
+    "overrides": {
+        "execution": {
+            "end_time": 12
+        }
+    }
+}

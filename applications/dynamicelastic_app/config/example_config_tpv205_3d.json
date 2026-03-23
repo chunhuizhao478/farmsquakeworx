@@ -1,0 +1,31 @@
+{
+    "benchmark": "tpv205_3d",
+    "overrides": {
+        "material": {
+            "density": 2670,
+            "lambda_o": 3.204e10,
+            "shear_modulus_o": 3.204e10
+        },
+        "slip_weakening": {
+            "q": 0.1,
+            "Dc": 0.4,
+            "T2_o": 120e6,
+            "T3_o": 0.0,
+            "mu_d": 0.525,
+            "len": 100
+        },
+        "mesh": {
+            "mesh_file": "../mesh/tpv2053d_400m.msh"
+        },
+        "execution": {
+            "dt": 0.0025,
+            "end_time": 12
+        },
+        "output": {
+            "exodus_interval": 20,
+            "csv_interval": 20,
+            "checkpoint_interval": 160,
+            "checkpoint_num_files": 2
+        }
+    }
+}

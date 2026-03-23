@@ -1,0 +1,112 @@
+{
+    "_comment": "Reference config showing ALL possible fields across all benchmarks. Values shown are defaults from defaults.json. Only include fields in your config that you want to override.",
+
+    "benchmark": "tpv205_2d | tpv205_3d | tpv26_3d",
+    "mesh_variant": "tria | quad  (only for tpv205_2d; default: tria)",
+    "output_dir": "(optional) override output directory",
+    "output_filename": "(optional) override output filename",
+
+    "overrides": {
+        "_comment_material": "Common to all benchmarks (defined in common defaults)",
+        "material": {
+            "density": 2670,
+            "lambda_o": 3.204e10,
+            "shear_modulus_o": 3.204e10
+        },
+
+        "_comment_slip_weakening": "All benchmarks; values vary per benchmark",
+        "slip_weakening": {
+            "q": "0.2 (tpv205_2d_tria) | 0.1 (tpv205_2d_quad, tpv205_3d) | 0.4 (tpv26_3d)",
+            "Dc": "0.4 (tpv205_*) | 0.3 (tpv26_3d)",
+            "T2_o": "120e6 (tpv205_* only)",
+            "T3_o": "0.0 (tpv205_3d only)",
+            "mu_s": "0.677 (tpv205_2d only) | 0.18 (tpv26_3d only)",
+            "mu_d": "0.525 (tpv205_*) | 0.12 (tpv26_3d)",
+            "len": "200 (tpv205_2d_*) | 100 (tpv205_3d, tpv26_3d)"
+        },
+
+        "_comment_initial_shear_stress": "tpv205_2d only; piecewise shear stress along fault",
+        "initial_shear_stress": {
+            "T1_o": "70.0e6 (tpv205_2d only) — background shear stress",
+            "T1_o_elevated": "78.0e6 (tpv205_2d only) — elevated stress patch",
+            "T1_o_nucleation": "81.6e6 (tpv205_2d only) — nucleation patch",
+            "T1_o_reduced": "62.0e6 (tpv205_2d only) — reduced stress patch"
+        },
+
+        "_comment_mesh": "Varies per benchmark",
+        "mesh": {
+            "mesh_file": "(tpv205_2d_tria, tpv205_3d, tpv26_3d)",
+            "nx": "(tpv205_2d_quad only)",
+            "ny": "(tpv205_2d_quad only)",
+            "xmin": "(tpv205_2d_quad only)",
+            "xmax": "(tpv205_2d_quad only)",
+            "ymin": "(tpv205_2d_quad only)",
+            "ymax": "(tpv205_2d_quad only)",
+            "elem_size": "(tpv26_3d only)",
+            "xmin_fault": "(tpv26_3d only)",
+            "xmax_fault": "(tpv26_3d only)",
+            "zmin_fault": "(tpv26_3d only)"
+        },
+
+        "_comment_boundary_conditions": "tpv205_2d_* only",
+        "boundary_conditions": {
+            "p_wave_speed": 6000,
+            "shear_wave_speed": 3464
+        },
+
+        "_comment_execution": "end_time from common defaults; dt per benchmark",
+        "execution": {
+            "dt": "0.01 (tpv205_2d_*) | 0.0025 (tpv205_3d, tpv26_3d)",
+            "end_time": 12
+        },
+
+        "_comment_output": "Varies per benchmark",
+        "output": {
+            "exodus_interval": "10 (tpv205_2d_*) | 20 (tpv205_3d) | 40 (tpv26_3d)",
+            "csv_interval": "(tpv205_3d, tpv26_3d only)",
+            "checkpoint_interval": "(tpv205_3d, tpv26_3d only)",
+            "checkpoint_num_files": "(tpv205_3d, tpv26_3d only)"
+        },
+
+        "_comment_tpv26_only": "The following sections are tpv26_3d only",
+        "initial_stress": {
+            "fluid_density": 1000,
+            "gravity": 9.8,
+            "bxx": 0.926793,
+            "byy": 1.073206,
+            "bxy": -0.169029
+        },
+        "cohesion": {
+            "cohesion_depth": 5000,
+            "cohesion_slope": 0.00072,
+            "cohesion_min": 0.4
+        },
+        "nucleation": {
+            "nucl_center_x": -5000,
+            "nucl_center_y": 0,
+            "nucl_center_z": -10000,
+            "r_crit": 4000,
+            "Vs": 3464,
+            "t0": 0.5
+        },
+        "tapering": {
+            "use_tapering": true,
+            "tapering_depth_A": 15000,
+            "tapering_depth_B": 20000
+        },
+        "cdb_model": {
+            "xi_0": -1.1,
+            "xi_d": -1.1,
+            "Cd_constant": 0,
+            "CdCb_multiplier": 100,
+            "CBH_constant": 1e4,
+            "C_1": 300,
+            "C_2": 0.05,
+            "beta_width": 0.05,
+            "C_g": 1e-10,
+            "m1": 10,
+            "m2": 1,
+            "chi": 0.8
+        }
+    }
+}

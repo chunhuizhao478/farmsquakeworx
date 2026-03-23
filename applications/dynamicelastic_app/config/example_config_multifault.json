@@ -1,0 +1,58 @@
+{
+  "domain": {
+    "xmin": -26000,
+    "xmax": 24000,
+    "ymin": -20000,
+    "ymax": 20000,
+    "element_size": 100
+  },
+  "faults": [
+    {
+      "label": "fault_1",
+      "start": [-16000, 0.0],
+      "end": [12000, 0.0]
+    },
+    {
+      "label": "fault_2",
+      "start": [200, -200],
+      "end": [10392.3, -6000]
+    },
+    {
+      "label": "fault_3",
+      "start": [200, 200],
+      "end": [10392.3, 6000]
+    },
+    {
+      "label": "fault_4",
+      "start": [0, 200],
+      "end": [0, 6000]
+    },
+    {
+      "label": "fault_5",
+      "start": [-800, -200],
+      "end": [9392.3, -6000]
+    }
+  ],
+  "initial_stress_tensor": {
+    "stress_xx": -120e6,
+    "stress_xy": 70e6,
+    "stress_yy": -120e6
+  },
+  "nucleation": {
+    "peak_shear_stress": 81.6e6,
+    "center": [-8000, 0],
+    "radius": 1500
+  },
+  "physics": {
+    "q": 0.1,
+    "Dc": 0.4,
+    "mu_s": 0.677,
+    "mu_d": 0.525,
+    "density": 2670,
+    "lambda_o": 3.204e10,
+    "shear_modulus_o": 3.204e10
+  },
+  "execution": { "dt": 0.0025, "end_time": 12 },
+  "output": { "exodus_interval": 40, "csv_interval": 40 },
+  "mesh_file": null
+}

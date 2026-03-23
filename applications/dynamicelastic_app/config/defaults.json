@@ -1,0 +1,205 @@
+{
+    "common": {
+        "material": {
+            "density": 2670,
+            "lambda_o": 3.204e10,
+            "shear_modulus_o": 3.204e10
+        },
+        "execution": {
+            "end_time": 12
+        }
+    },
+    "benchmarks": {
+        "tpv14_2d_tria": {
+            "template": "tpv142D_tria.i.template",
+            "output_dir": "2d_slipweakening_tpv14",
+            "output_filename": "tpv142D_tria.i",
+            "slip_weakening": {
+                "q": 0.1,
+                "Dc": 0.4,
+                "T2_o": 120e6,
+                "mu_s": 0.677,
+                "mu_d": 0.525,
+                "len": 100
+            },
+            "initial_shear_stress": {
+                "T1_o": 70.0e6,
+                "T1_o_nucleation": 81.6e6
+            },
+            "mesh": {
+                "mesh_file": "../mesh/tpv142d_100m.msh"
+            },
+            "boundary_conditions": {
+                "p_wave_speed": 6000,
+                "shear_wave_speed": 3464
+            },
+            "execution": {
+                "dt": 0.0025
+            },
+            "output": {
+                "exodus_interval": 40
+            }
+        },
+        "tpv205_2d_tria": {
+            "template": "tpv2052D_tria.i.template",
+            "output_dir": "2d_slipweakening_tpv205",
+            "output_filename": "tpv2052D_tria.i",
+            "slip_weakening": {
+                "q": 0.2,
+                "Dc": 0.4,
+                "T2_o": 120e6,
+                "mu_s": 0.677,
+                "mu_d": 0.525,
+                "len": 200
+            },
+            "initial_shear_stress": {
+                "T1_o": 70.0e6,
+                "T1_o_elevated": 78.0e6,
+                "T1_o_nucleation": 81.6e6,
+                "T1_o_reduced": 62.0e6
+            },
+            "mesh": {
+                "mesh_file": "../mesh/tpv2052d_tria3.msh"
+            },
+            "boundary_conditions": {
+                "p_wave_speed": 6000,
+                "shear_wave_speed": 3464
+            },
+            "execution": {
+                "dt": 0.01
+            },
+            "output": {
+                "exodus_interval": 10
+            }
+        },
+        "tpv205_2d_quad": {
+            "template": "tpv2052D_quad.i.template",
+            "output_dir": "2d_slipweakening_tpv205",
+            "output_filename": "tpv2052D_quad.i",
+            "slip_weakening": {
+                "q": 0.1,
+                "Dc": 0.4,
+                "T2_o": 120e6,
+                "mu_s": 0.677,
+                "mu_d": 0.525,
+                "len": 200
+            },
+            "initial_shear_stress": {
+                "T1_o": 70.0e6,
+                "T1_o_elevated": 78.0e6,
+                "T1_o_nucleation": 81.6e6,
+                "T1_o_reduced": 62.0e6
+            },
+            "mesh": {
+                "nx": 400,
+                "ny": 400,
+                "xmin": -40000,
+                "xmax": 40000,
+                "ymin": -40000,
+                "ymax": 40000
+            },
+            "boundary_conditions": {
+                "p_wave_speed": 6000,
+                "shear_wave_speed": 3464
+            },
+            "execution": {
+                "dt": 0.01
+            },
+            "output": {
+                "exodus_interval": 10
+            }
+        },
+        "tpv205_3d": {
+            "template": "tpv2053D_tet.i.template",
+            "output_dir": "3d_slipweakening_tpv205",
+            "output_filename": "tpv2053D_tet.i",
+            "slip_weakening": {
+                "q": 0.1,
+                "Dc": 0.4,
+                "T2_o": 120e6,
+                "T3_o": 0.0,
+                "mu_d": 0.525,
+                "len": 100
+            },
+            "mesh": {
+                "mesh_file": "../mesh/tpv2053d_400m.msh"
+            },
+            "execution": {
+                "dt": 0.0025
+            },
+            "output": {
+                "exodus_interval": 20,
+                "csv_interval": 20,
+                "checkpoint_interval": 160,
+                "checkpoint_num_files": 2
+            }
+        },
+        "tpv26_3d": {
+            "template": "tpv263D_tet.i.template",
+            "output_dir": "3d_slipweakening_tpv26",
+            "output_filename": "tpv263D_tet.i",
+            "slip_weakening": {
+                "q": 0.4,
+                "Dc": 0.3,
+                "mu_s": 0.18,
+                "mu_d": 0.12,
+                "len": 100
+            },
+            "mesh": {
+                "mesh_file": "../mesh/tpv26_400m.msh",
+                "elem_size": 100,
+                "xmin_fault": -20000,
+                "xmax_fault": 20000,
+                "zmin_fault": -20000
+            },
+            "initial_stress": {
+                "fluid_density": 1000,
+                "gravity": 9.8,
+                "bxx": 0.926793,
+                "byy": 1.073206,
+                "bxy": -0.169029
+            },
+            "cohesion": {
+                "cohesion_depth": 5000,
+                "cohesion_slope": 0.00072,
+                "cohesion_min": 0.4
+            },
+            "nucleation": {
+                "nucl_center_x": -5000,
+                "nucl_center_y": 0,
+                "nucl_center_z": -10000,
+                "r_crit": 4000,
+                "Vs": 3464,
+                "t0": 0.5
+            },
+            "tapering": {
+                "use_tapering": true,
+                "tapering_depth_A": 15000,
+                "tapering_depth_B": 20000
+            },
+            "cdb_model": {
+                "xi_0": -1.1,
+                "xi_d": -1.1,
+                "Cd_constant": 0,
+                "CdCb_multiplier": 100,
+                "CBH_constant": 1e4,
+                "C_1": 300,
+                "C_2": 0.05,
+                "beta_width": 0.05,
+                "C_g": 1e-10,
+                "m1": 10,
+                "m2": 1,
+                "chi": 0.8
+            },
+            "execution": {
+                "dt": 0.0025
+            },
+            "output": {
+                "exodus_interval": 40,
+                "csv_interval": 40,
+                "checkpoint_interval": 40,
+                "checkpoint_num_files": 2
+            }
+        }
+    }
+}
