@@ -17,7 +17,6 @@ MOOSE-FARMS is part of the [QUAKEWORX](https://quakeworx.org) project — a scie
 - **Multi-fault dynamic rupture** — Automated JSON-to-simulation pipeline for arbitrary 2D fault geometries ([MultiFault SandBox](CHANGELOG.md#multifault-sandbox-automated-multi-fault-dynamic-rupture-simulations))
 - **Single-fault benchmarks** — TPV205 2D/3D, TPV14 2D, TPV26 3D with JSON config system
 - **Damage-breakage mechanics** — 3D CDBM with slip weakening, nonlocal regularization, and static variants
-- **Rate-state friction** — 2D/3D rate-state friction with custom interface kernels
 - **Distributed mesh support** — CZM dynamic rupture runs with `parallel_type = DISTRIBUTED` for memory-efficient large-scale simulations
 - **Application presets** — Ready-to-use configurations for elastic, CDBM, CDBM+fault, and poroelastic simulations
 
