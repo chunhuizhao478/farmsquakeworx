@@ -26,7 +26,18 @@ python generate_multifault.py config/example_config_multifault.json
 
 # Run unit tests
 make -j4 -C unit && ./unit/farmsquakeworx-unit-opt
+
+# Run integration tests (requires moose conda env)
+conda activate moose
+./run_tests -j4
+
+# Run a specific test
+./run_tests -j4 --re=slip_weakening_czm_2d
 ```
+
+> **Note:** If `which python3` does not point to the conda environment
+> (`/Users/chunhuizhao/miniforge/envs/moose/bin/python3`), you may need to
+> run `export PATH="/Users/chunhuizhao/miniforge/envs/moose/bin:$PATH"` first.
 
 ## Documentation
 

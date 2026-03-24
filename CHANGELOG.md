@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## v2.1.1 — March 23, 2026
+
+### Added — Distributed Mesh Support for CZM Dynamic Rupture
+
+- CZM dynamic rupture simulations now support `parallel_type = DISTRIBUTED`, enabling memory-efficient parallel execution for large-scale problems. With distributed mesh, each MPI rank only stores its local partition rather than a full copy of the mesh.
+- Added distributed mesh integration test (`sw_czm_2d_distributed`) that verifies `BreakMeshByBlockGenerator` + `CohesiveZoneMaster` produces identical results under `DISTRIBUTED` and `REPLICATED` mesh modes.
+- Added TPV205-2D distributed mesh application input file (`tpv2052D_quad_distributedmesh.i`).
+- **Note:** `--split-mesh` / `--use-split` pre-splitting is **not compatible** with `BreakMeshByBlockGenerator` + interface kernels, because the disjoint neighbor boundary pair metadata is not preserved during checkpoint serialization. Use `parallel_type = DISTRIBUTED` in the `[Mesh]` block instead.
+
+### Changed — Build and Test Infrastructure
+
+- Fixed `run_tests` to resolve `moose_e5e72a5` as a sibling directory fallback.
+- Updated `Makefile` MOOSE submodule path to `moose_e5e72a5`.
+- Documented test commands in `README.md`.
+
+### Upcoming
+
+- Distributed mesh support for 3D single-fault and multi-fault dynamic rupture problems.
+- Distributed mesh support for 2D/3D damage-breakage (CDBM) simulations.
+
+---
+
 ## v2.1.0 — March 8, 2026
 
 ### Added — Stress Tensor Rotation for CZM Materials

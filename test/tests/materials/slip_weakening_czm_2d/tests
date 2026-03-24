@@ -7,4 +7,15 @@
     mesh_mode = 'REPLICATED'
     requirement = "SlipWeakeningFrictionczm2d shall compute slip weakening friction on 2D CZM interface with explicit time integration."
   []
+  [sw_czm_2d_distributed]
+    type = CSVDiff
+    input = test_sw_czm_2d.i
+    csvdiff = 'test_sw_czm_2d_out.csv'
+    cli_args = 'Mesh/parallel_type=DISTRIBUTED Mesh/sidesets/fixed_normal=true'
+    recover = false
+    min_parallel = 2
+    rel_err = 1e-6
+    abs_zero = 1e-10
+    requirement = "SlipWeakeningFrictionczm2d with BreakMeshByBlockGenerator on a distributed mesh shall produce results matching the replicated mesh."
+  []
 []
