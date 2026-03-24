@@ -1,7 +1,16 @@
-farmsquakeworx
+MOOSE-FARMS (farmsquakeworx)
 =====
 
-A MOOSE-based application for dynamic earthquake rupture simulations, featuring slip weakening friction, damage-breakage mechanics (CDBM), rate-state friction, and nonlocal damage regularization.
+MOOSE-FARMS is part of the [QUAKEWORX](https://quakeworx.org) project — a science gateway for seismic simulations. It is a MOOSE-based application for dynamic earthquake rupture simulations, featuring slip weakening friction, damage-breakage mechanics (CDBM), rate-state friction, and nonlocal damage regularization.
+
+## Applications
+
+| Application | Description |
+|---|---|
+| **dynamicelastic** | Dynamic rupture in an elastic medium. Supports slip weakening and rate-state friction on pre-existing faults with explicit time integration. |
+| **dynamicporoelastic** | Dynamic rupture in a poroelastic medium. Couples fully coupled dynamic poroelasticity with fault mechanics for fluid-induced seismicity studies. |
+| **dynamiccdbm_f** | Dynamic rupture with continuum damage-breakage rheology (CDBM) and a pre-existing fault. Combines on-fault friction with off-fault damage evolution. |
+| **dynamiccdbm** | Dynamic rupture with CDBM without a pre-existing fault. Rupture nucleates and propagates spontaneously through damage and breakage evolution. |
 
 ## Features
 
@@ -9,6 +18,7 @@ A MOOSE-based application for dynamic earthquake rupture simulations, featuring 
 - **Single-fault benchmarks** — TPV205 2D/3D, TPV14 2D, TPV26 3D with JSON config system
 - **Damage-breakage mechanics** — 3D CDBM with slip weakening, nonlocal regularization, and static variants
 - **Rate-state friction** — 2D/3D rate-state friction with custom interface kernels
+- **Distributed mesh support** — CZM dynamic rupture runs with `parallel_type = DISTRIBUTED` for memory-efficient large-scale simulations
 - **Application presets** — Ready-to-use configurations for elastic, CDBM, CDBM+fault, and poroelastic simulations
 
 ## Quick Start
@@ -46,4 +56,5 @@ conda activate moose
 
 ## More Information
 
-Built on the [MOOSE Framework](http://mooseframework.org/create-an-app/).
+- [QUAKEWORX](https://quakeworx.org) — Science gateway for seismic simulations
+- Built on the [MOOSE Framework](http://mooseframework.org/create-an-app/)
