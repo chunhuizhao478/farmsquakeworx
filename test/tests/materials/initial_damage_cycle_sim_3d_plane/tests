@@ -1,0 +1,10 @@
+[Tests]
+  [initial_damage_cycle_sim_3d_plane]
+    type = CSVDiff
+    input = test_initial_damage_cycle_sim_3d_plane.i
+    csvdiff = 'test_initial_damage_cycle_sim_3d_plane_out.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-10
+    requirement = "InitialDamageCycleSim3DPlane shall produce an exponentially decaying initial damage field peaking at the fault-plane center."
+  []
+[]

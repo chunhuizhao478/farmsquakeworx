@@ -1,0 +1,10 @@
+[Tests]
+  [cdbm_eigenstrain_from_initial_stress]
+    type = CSVDiff
+    input = test_cdbm_eigenstrain_from_initial_stress.i
+    csvdiff = 'test_cdbm_eigenstrain_from_initial_stress_out.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-10
+    requirement = "ComputeDamageBreakageEigenstrainFromInitialStress shall compute the inverse-Hooke eigenstrain from a specified initial stress tensor when the initial damage is zero."
+  []
+[]

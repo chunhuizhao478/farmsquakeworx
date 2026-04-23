@@ -1,0 +1,10 @@
+[Tests]
+  [effective_body_force_tpv26_varying_density]
+    type = CSVDiff
+    input = test_effective_body_force_tpv26_varying_density.i
+    csvdiff = 'test_effective_body_force_tpv26_varying_density_out.csv'
+    rel_err = 1e-6
+    abs_zero = 1e-8
+    requirement = "EffectiveBodyForceTPV26VaryingDensity shall apply a depth-dependent body force using the TPV32 density profile with pore-pressure gradient correction."
+  []
+[]

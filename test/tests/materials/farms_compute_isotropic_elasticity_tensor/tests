@@ -1,0 +1,10 @@
+[Tests]
+  [farms_compute_isotropic_elasticity_tensor]
+    type = CSVDiff
+    input = test_farms_compute_isotropic_elasticity_tensor.i
+    csvdiff = 'test_farms_compute_isotropic_elasticity_tensor_out.csv'
+    rel_err = 1e-6
+    abs_zero = 1e-6
+    requirement = "FarmsComputeIsotropicElasticityTensor shall reduce to the isotropic (lambda, mu) elasticity tensor when the initial damage is zero."
+  []
+[]

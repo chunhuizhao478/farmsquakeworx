@@ -5,6 +5,6 @@
     csvdiff = 'test_cdbm_3d_nonlocal_out.csv'
     recover = false
     mesh_mode = 'REPLICATED'
-    requirement = "ComputeDamageBreakageStress3DSlipWeakeningNonlocal shall compute nonlocal damage-breakage stress with ElkRadialAverageUpdated averaging."
+    requirement = "ComputeDamageBreakageStress3DSlipWeakening (nonlocal mode) shall compute nonlocal damage-breakage stress with ElkRadialAverageUpdated averaging."
   []
 []

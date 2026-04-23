@@ -1,0 +1,10 @@
+[Tests]
+  [tpv32_depth_seismic_properties]
+    type = CSVDiff
+    input = test_tpv32_depth_seismic_properties.i
+    csvdiff = 'test_tpv32_depth_seismic_properties_out.csv'
+    rel_err = 1e-4
+    abs_zero = 1e-4
+    requirement = "TPV32DepthSeismicProperties shall provide TPV32 piecewise-linear Vs, Vp, density and derived mu, lambda at a specified depth."
+  []
+[]

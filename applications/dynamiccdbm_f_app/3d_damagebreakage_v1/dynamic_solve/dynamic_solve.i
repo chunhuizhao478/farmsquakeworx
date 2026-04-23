@@ -7,32 +7,13 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                       60000 60000  -60000;
                      -60000 60000  -60000'
 
-##element size
-elem_size = 200 #!!! element size near the fault, need to be consistent with the mesh file
-
-##mesh domain
-nonlocal_eqstrain_blocks = '100 200'
-
-#here we avoid the cross-fault averaging by defining separate averaging blocks
-local_eqstrain_blocks_1 = '10'
-nonlocal_eqstrain_blocks_2 = '100'
-nonlocal_eqstrain_blocks_3 = '200'
-
-local_eqstrain_blocks = '11'
-
-##main fault parameters
-xmin_fault = -20000 #xmin of fault
-xmax_fault = 20000 #xmax of fault
-zmin_fault = -20000 #zmin of fault
+xmin_fault = -15000 #xmin of fault
+xmax_fault = 15000 #xmax of fault
+zmin_fault = -15000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
-
-#nonlocal length applied region along ydir
-ymin_fault = -10000
-ymax_fault = 2000
-nonlocal_averaging_length_scale = 400
-nonlocal_averaging_radius = 600
-
+elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
 ##-------------------------##
+
 ##material properties##
 density = 2670 #density
 lambda_o = 3.204e10 #first lame constant
@@ -42,28 +23,18 @@ shear_modulus_o = 3.204e10 #second lame constant
 ##-------------------------##
 
 ##Slip weakening parameters##
-Dc = 0.8 #characteristic length (m)
+Dc = 0.4 #characteristic length (m)
 q = 0.4 #damping ratio
-mu_s = 0.8 #static friction coefficient
-mu_d = 0.6 #dynamic friction coefficient
+mu_s = 0.677 #static friction coefficient
+mu_d = 0.525 #dynamic friction coefficient
 ##-------------------------##
-
-##Cohesion parameters##
-cohesion_depth = 5000 #cohesion depth (m)
-cohesion_slope = 0.00072 #cohesion slope (MPa/m)
-cohesion_min = 0.4 #minimum cohesion value (MPa)
-##---------------------------------------------##
 
 ##CDB model parameters##
 xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
 xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = -1 #coefficient gives positive damage evolution
-use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
-m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
-cd_hat = 10 #strain rate dependent parameters
+Cd_constant = 5e5 #coefficient gives positive damage evolution
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
@@ -71,65 +42,72 @@ CBH_constant = 0 #coefficient of healing for breakage evolution
 C_1 = 0 #coefficient of healing for damage evolution
 C_2 = 0.05 #coefficient of healing for damage evolution
 beta_width = 0.05 #coefficient gives width of transitional region
-C_g = 1e-12 #material parameter: compliance or fluidity of the fine grain granular material
+C_g = 1e-10 #material parameter: compliance or fluidity of the fine grain granular material
 m1 = 10 #coefficient of power law indexes
 m2 = 1 #coefficient of power law indexes
 chi = 0.8 #energy ratio
 ##-------------------------##
 
-
 ##initial stress parameters##
-#background stress
-fluid_density = 1000
-gravity = 9.8
-bxx = 0.926793
-byy = 1.073206
-bxy = -0.8
-##------------------------------------------------------------------##
 
-##tapering parameters##
-use_tapering = true #use tapering to reduce deviatoric stress components at shallow depth
-tapering_depth_A = 15000 #depth at which tapering starts to be applied (m)
-tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
-##------------------------------------------------------------------##
+#background stress
+background_stress_xx = -70e6
+background_stress_yy = -120e6
+background_stress_xy = 70e6
+background_stress_zz = -70e6
+background_stress_xz = 0
+background_stress_yz = 0
+##-------------------------##
+
+#background strain
+background_mean_stress = ${fparse (background_stress_xx + background_stress_yy + background_stress_zz)}
+first_hooke_law_factor = ${fparse (1 / (2 * shear_modulus_o))}
+second_hooke_law_factor = ${fparse (lambda_o / (2 * shear_modulus_o * (3 * lambda_o + 2 * shear_modulus_o)))}
+background_strain_xx = ${fparse first_hooke_law_factor * background_stress_xx - second_hooke_law_factor * background_mean_stress}
+background_strain_yy = ${fparse first_hooke_law_factor * background_stress_yy - second_hooke_law_factor * background_mean_stress}
+background_strain_xy = ${fparse first_hooke_law_factor * background_stress_xy}
+background_strain_zz = ${fparse first_hooke_law_factor * background_stress_zz - second_hooke_law_factor * background_mean_stress}
+background_strain_xz = ${fparse first_hooke_law_factor * background_stress_xz}
+background_strain_yz = ${fparse first_hooke_law_factor * background_stress_yz}
+##-------------------------##
 
 #nucleation parameters
-nucl_center_x = -16000 #nucleation center x coordinate
+nucl_center_x = 0 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
-nucl_center_z = -10000 #nucleation center y coordinate
-r_crit = 3000 #critical distance to hypocenter (m)
+nucl_center_z = -7500 #nucleation center y coordinate
+r_crit = 4000 #critical distance to hypocenter (m)
 Vs = 3464 #shear wave speed (m/s)
 t0 = 0.5 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.005 #time step size
+dt = 0.0025 #time step size
 
-end_time = 20.0 #end time for simulation
+end_time = 5.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 20 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
-csv_time_step_interval = 2 #time step interval for csv output
-checkpoint_time_step_interval = 40 #time step interval for checkpoint output
+csv_time_step_interval = 20 #time step interval for csv output
+checkpoint_time_step_interval = 80 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
-##------------------------------------------------------------------------##
+##-------------------------##
 
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault_uniform200m_tensileside.msh'
+    file = '../../meshgenerator/tpv205/tpv2053d_100m.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0 & y < ${ymax_fault}'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0'
     block_id = 100
   []
   [./new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y > ${ymin_fault}'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0'
     block_id = 200
   []
   [./split_1]
@@ -273,54 +251,48 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   ###
   #output initial shear stress
-  [cohesion_aux]
-    order = FIRST
-    family = LAGRANGE
-  []
-  [forced_rupture_aux]
-    order = FIRST
-    family = LAGRANGE
-  []
-  [fluid_pressure_aux]
-    order = FIRST
-    family = LAGRANGE
-  []
-  ###
-  #output jump, jump rate, traction quantities
-  [jump_strike_aux]
+  [ini_shear_sts_aux]
     order = FIRST
     family = MONOMIAL
   []
-  [jump_strike_rate_aux]
+  ###
+  #output jump, jump rate, traction quantities
+  [displacement_jump_strike_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [displacement_jump_rate_strike_aux]
     order = FIRST
     family = MONOMIAL
   []
   [traction_strike_aux]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  #
+  [displacement_jump_normal_aux]
     order = FIRST
     family = MONOMIAL
   []
-  [jump_normal_aux]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [jump_normal_rate_aux]
+  [displacement_jump_rate_normal_aux]
     order = FIRST
     family = MONOMIAL
   []
   [traction_normal_aux]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  #
+  [displacement_jump_dip_aux]
     order = FIRST
     family = MONOMIAL
   []
-  [jump_dip_aux]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [jump_dip_rate_aux]
+  [displacement_jump_rate_dip_aux]
     order = FIRST
     family = MONOMIAL
   []
   [traction_dip_aux]
-    order = FIRST
+    order = CONSTANT
     family = MONOMIAL
   []
   ###
@@ -337,20 +309,18 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       order = FIRST
       family = MONOMIAL
   []
-  ###
-  [deviatoric_strain_rate_aux]
+  #
+  [cohesion_aux]
     order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
-  ##
-  [eqstrain_nonlocal_aux]
+  [forced_rupture_aux]
     order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
-  ##
-  [eqstrain_nonlocal_initial_aux]
+  [fluid_pressure_aux]
     order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
 []
 
@@ -473,18 +443,25 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     function = func_fluid_pressure
     execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
+  ### slip weakening initial shear stress
+  # [get_ini_shear_stress_aux]
+  #   type = FunctionAux
+  #   variable = ini_shear_sts_aux
+  #   function = func_initial_stress_xy_variable
+  #   execute_on = 'TIMESTEP_BEGIN'
+  # []
   ### slip weakening strike direction
-  [get_jump_strike_aux]
+  [get_displacement_jump_strike_aux]
     type = MaterialRealAux
     property = displacement_jump_strike
-    variable = jump_strike_aux
+    variable = displacement_jump_strike_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
   []
-  [get_jump_strike_rate_aux]
+  [get_displacement_jump_rate_strike_aux]
     type = MaterialRealAux
     property = displacement_jump_rate_strike
-    variable = jump_strike_rate_aux
+    variable = displacement_jump_rate_strike_aux
     execute_on = 'TIMESTEP_END'
     boundary = 'Block100_Block200'
   []
@@ -496,17 +473,17 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     execute_on = 'TIMESTEP_END'
   []
   ### slip weakening normal direction
-  [get_jump_normal_aux]
+  [get_displacement_jump_normal_aux]
     type = MaterialRealAux
     property = displacement_jump_normal
-    variable = jump_normal_aux
+    variable = displacement_jump_normal_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
   []
-  [get_jump_normal_rate_aux]
+  [get_displacement_jump_rate_normal_aux]
     type = MaterialRealAux
     property = displacement_jump_rate_normal
-    variable = jump_normal_rate_aux
+    variable = displacement_jump_rate_normal_aux
     execute_on = 'TIMESTEP_END'
     boundary = 'Block100_Block200'
   []
@@ -518,19 +495,19 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     execute_on = 'TIMESTEP_END'
   []
   ### slip weakening dip direction
-  [get_jump_dip_aux]
+  [get_displacement_jump_dip_aux]
     type = MaterialRealAux
     property = displacement_jump_dip
-    variable = jump_dip_aux
+    variable = displacement_jump_dip_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
   []
-  [get_jump_dip_rate_aux]
+  [get_displacement_jump_rate_dip_aux]
     type = MaterialRealAux
     property = displacement_jump_rate_dip
-    variable = jump_dip_rate_aux
-    boundary = 'Block100_Block200'
+    variable = displacement_jump_rate_dip_aux
     execute_on = 'TIMESTEP_END'
+    boundary = 'Block100_Block200'
   []
   [get_traction_dip_aux]
     type = MaterialRealAux
@@ -559,28 +536,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     execute_on = 'TIMESTEP_END'
   []
   ###
-  [get_deviatoric_strain_rate]
-    type = MaterialRealAux
-    variable = deviatoric_strain_rate_aux
-    property = deviatoric_strain_rate
-    execute_on = 'TIMESTEP_END'
-  []
-  ###
-  [get_eqstrain_nonlocal_aux]
-    type = MaterialRealAux
-    variable = eqstrain_nonlocal_aux
-    property = eqstrain_nonlocal
-    execute_on = 'TIMESTEP_END'
-    # block = ${nonlocal_eqstrain_blocks}
-  []
-  ###
-  [get_eqstrain_nonlocal_initial]
-    type = SolutionAux
-    variable = eqstrain_nonlocal_initial_aux
-    solution = init_sol_components
-    from_variable = xi
-    execute_on = 'INITIAL'
-  []
 []
 
 [Kernels]
@@ -618,15 +573,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
 [Materials]
   #damage breakage model
-  [stress_medium_nonlocal]
-      type = ComputeDamageBreakageStress3DSlipWeakeningNonlocal
-      output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
-      use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
-      m_exponent = ${m_exponent}
-      strain_rate_hat = ${strain_rate_hat}
-      cd_hat = ${cd_hat}
-      use_nonlocal_eqstrain = true
-      nonlocal_eqstrain_blocks = ${nonlocal_eqstrain_blocks}
+  [stress_medium]
+      type = ComputeDamageBreakageStress3DSlipWeakening
+      output_properties = 'B alpha_damagedvar xi I1 I2'
       outputs = exodus
   []
   [dummy_material]
@@ -634,19 +583,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       prop_names = 'initial_damage initial_breakage damage_perturbation density'
       prop_values = '0 0 0 ${density}'
   []
-  [eqstrain_nonlocal_initial_xi]
-      type = CoupledVariableValueMaterial #this material object is in thermalhydraulicApp
-      coupled_variable = eqstrain_nonlocal_initial_aux
-      prop_name = eqstrain_nonlocal_initial
-      output_properties = 'eqstrain_nonlocal_initial'
-      outputs = exodus
-  []
   [./czm_mat]
       type = SlipWeakeningFrictionczm3dCDBM
-      mu_s = ${mu_s}
-      mu_d = ${mu_d}
-      Dc = ${Dc}
-      len = ${elem_size}
       disp_slipweakening_x     = disp_slipweakening_x
       disp_slipweakening_y     = disp_slipweakening_y
       disp_slipweakening_z     = disp_slipweakening_z
@@ -656,6 +594,10 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       reaction_slipweakening_x = resid_slipweakening_x
       reaction_slipweakening_y = resid_slipweakening_y
       reaction_slipweakening_z = resid_slipweakening_z
+      mu_s = ${mu_s}
+      mu_d = ${mu_d}
+      Dc = ${Dc}
+      len = ${elem_size}
       #---------------------------------------------#
       use_forced_rupture = true
       t0 = ${t0}
@@ -674,129 +616,74 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       output_properties = 'static_initial_strain_tensor'
       outputs = exodus
   [../]
-  [./static_initial_stress_tensor] #this is used in the SlipWeakeningFrictionczm3dCDBM
+  [./static_initial_stress_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening, SlipWeakeningFrictionczm3dCDBM
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_stress_tensor
       tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
                           func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                           func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
-      output_properties = 'static_initial_stress_tensor'
-      outputs = exodus
   [../]
-  #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
-  #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
-  [nonlocal_eqstrain_block2]
-    type = ElkNonlocalEqstrainUpdated
-    average_UO = eqstrain_averaging_block2
-    block = ${nonlocal_eqstrain_blocks_2}
-  []
-  [nonlocal_eqstrain_block3]
-    type = ElkNonlocalEqstrainUpdated
-    average_UO = eqstrain_averaging_block3
-    block = ${nonlocal_eqstrain_blocks_3}
-  []
-  #for the block outside the region, nonlocal strain is equal to the local strain
-  [nonlocal_eqstrain_block]
-    type = ParsedMaterial
-    property_name = eqstrain_nonlocal
-    coupled_variables = 'xi_aux'
-    expression = 'xi_aux'
-    block = ${local_eqstrain_blocks}
-  []
-  [nonlocal_eqstrain_block1]
-    type = ParsedMaterial
-    property_name = eqstrain_nonlocal
-    coupled_variables = 'xi_aux'
-    expression = 'xi_aux'
-    block = ${local_eqstrain_blocks_1}
-  []
 []
 
 [Functions]
-  ###strain field###
   [./func_initial_strain_xx]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'elastic_strain_00'
+    type = ConstantFunction
+    value = ${background_strain_xx}
   []
   [./func_initial_strain_xy]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'elastic_strain_01'
+    type = ConstantFunction
+    value = ${background_strain_xy}
   []
   [./func_initial_strain_xz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'elastic_strain_02'
+    type = ConstantFunction
+    value = ${background_strain_xz}
   []
   [./func_initial_strain_yy]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'elastic_strain_11'
+    type = ConstantFunction
+    value = ${background_strain_yy}
   []
   [./func_initial_strain_yz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'elastic_strain_12'
+    type = ConstantFunction
+    value = ${background_strain_yz}
   []
   [./func_initial_strain_zz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'elastic_strain_22'
+    type = ConstantFunction
+    value = ${background_strain_zz}
   []
-  ###stress field###
+  ###
   [./func_initial_stress_xx]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'stress_00'
+    type = ConstantFunction
+    value = ${background_stress_xx}
   []
   [./func_initial_stress_xy]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'stress_01'
+    type = ConstantFunction
+    value = ${background_stress_xy}
   []
   [./func_initial_stress_xz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'stress_02'
+    type = ConstantFunction
+    value = ${background_stress_xz}
   []
   [./func_initial_stress_yy]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'stress_11'
+    type = ConstantFunction
+    value = ${background_stress_yy}
   []
   [./func_initial_stress_yz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'stress_12'
+    type = ConstantFunction
+    value = ${background_stress_yz}
   []
   [./func_initial_stress_zz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'stress_22'
+    type = ConstantFunction
+    value = ${background_stress_zz}
   []
   ###fluid pressure###
   [./func_fluid_pressure]
-    type = InitialStressStrainTPV26
-    i = 0 #not used
-    j = 0 #not used
-    get_fluid_pressure = true
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    use_tapering = ${use_tapering}
-    tapering_depth_A = ${tapering_depth_A}
-    tapering_depth_B = ${tapering_depth_B}
+    type = ConstantFunction
+    value = 0.0 #fluid pressure is not used in this example
   []
   ###cohesion###
   [./func_cohesion]
-    type = InitialCohesionCDBMv2
-    depth = ${cohesion_depth}
-    slope = ${cohesion_slope}
-    min_cohesion = ${cohesion_min}
+    type = ConstantFunction
+    value = 0.0 #cohesion is not used in this example
   []
   ###forcedrupture###
   [./func_forced_rupture]
@@ -816,35 +703,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       force_preaux = true
       execute_on = 'TIMESTEP_END'
   []
-  [./init_sol_components]
-    type = SolutionUserObject
-    mesh = '../static_solve/static_solve_uniform200m_out.e'
-    system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
-                        elastic_strain_11 elastic_strain_12 elastic_strain_22
-                        stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 xi'
-    timestep = LATEST
-    force_preaux = true
-    execute_on = 'INITIAL'
-  [../]
-  #here we avoid the cross-fault averaging by defining separate averaging blocks
-  [eqstrain_averaging_block2]
-    type = ElkRadialAverageUpdated
-    length_scale = ${nonlocal_averaging_length_scale}
-    prop_name = xi
-    radius = ${nonlocal_averaging_radius}
-    weights = BAZANT3D
-    execute_on = TIMESTEP_END
-    block = ${nonlocal_eqstrain_blocks_2}
-  []
-  [eqstrain_averaging_block3]
-    type = ElkRadialAverageUpdated
-    length_scale = ${nonlocal_averaging_length_scale}
-    prop_name = xi
-    radius = ${nonlocal_averaging_radius}
-    weights = BAZANT3D
-    execute_on = TIMESTEP_END
-    block = ${nonlocal_eqstrain_blocks_3}
-  []
 []
 
 [Executioner]
@@ -855,7 +713,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
-    use_constant_mass = true
   []
 []
 
@@ -863,99 +720,35 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux traction_strike_aux traction_normal_aux traction_dip_aux'
     time_step_interval = ${exodus_time_step_interval}
   []
-  #[csv]
-  #  type = CSV
-  #  execute_on = 'timestep_end'
-  #  time_step_interval = ${csv_time_step_interval}
-  #[]
+  [csv]
+    type = CSV
+    execute_on = 'timestep_end'
+    time_step_interval = ${csv_time_step_interval}
+  []
   [out]
     type = Checkpoint
     time_step_interval = ${checkpoint_time_step_interval}
     num_files = ${checkpoint_num_files}
   []
-  #[sample_snapshots]
-  #  type = Exodus
-  #  execute_on = 'timestep_end'
-  #  show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux'
-  #  time_step_interval = ${sample_snapshots_time_step_interval}
-  #[]
+  [sample_snapshots]
+    type = Exodus
+    execute_on = 'timestep_end'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux'
+    time_step_interval = ${sample_snapshots_time_step_interval}
+  []
 []
 
 [VectorPostprocessors]
   [main_fault]
     type = SideValueSampler
-    variable = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z jump_strike_aux jump_dip_aux jump_normal_aux jump_strike_rate_aux jump_dip_rate_aux jump_normal_rate_aux traction_strike_aux traction_dip_aux traction_normal_aux alpha_damagedvar_aux B_aux xi_aux'
+    variable = 'displacement_jump_strike_aux displacement_jump_rate_strike_aux traction_strike_aux
+                displacement_jump_normal_aux displacement_jump_rate_normal_aux traction_normal_aux
+                displacement_jump_dip_aux displacement_jump_rate_dip_aux traction_dip_aux
+                alpha_damagedvar_aux B_aux xi_aux'
     boundary = 'Block100_Block200'
     sort_by = x
-  []
-  [off_fault]
-    type = PositionsFunctorValueSampler
-    functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
-    positions = 'pos'
-    sort_by = x
-    execute_on = TIMESTEP_END
-    discontinuous = false
-  []
-[]
-
-#should use negative y as in tensile side
-[Positions]
-  [pos]
-    type = InputPositions
-    positions = '-24000 -1000 0
-                 -20000 -1000 0
-                 -16000 -1000 0
-                 -12000 -1000 0
-                 -8000 -1000 0
-                 -4000 -1000 0
-                 0 -1000 0
-                 4000 -1000 0
-                 8000 -1000 0
-                 12000 -1000 0
-                 16000 -1000 0
-                 20000 -1000 0
-                 24000 -1000 0
-                 -24000 -2000 0
-                 -20000 -2000 0
-                 -16000 -2000 0
-                 -12000 -2000 0
-                 -8000 -2000 0
-                 -4000 -2000 0
-                 0 -2000 0
-                 4000 -2000 0
-                 8000 -2000 0
-                 12000 -2000 0
-                 16000 -2000 0
-                 20000 -2000 0
-                 24000 -2000 0
-                 -24000 -3000 0
-                 -20000 -3000 0
-                 -16000 -3000 0
-                 -12000 -3000 0
-                 -8000 -3000 0
-                 -4000 -3000 0
-                 0 -3000 0
-                 4000 -3000 0
-                 8000 -3000 0
-                 12000 -3000 0
-                 16000 -3000 0
-                 20000 -3000 0
-                 24000 -3000 0
-                 -24000 -4000 0
-                 -20000 -4000 0
-                 -16000 -4000 0
-                 -12000 -4000 0
-                 -8000 -4000 0
-                 -4000 -4000 0
-                 0 -4000 0
-                 4000 -4000 0
-                 8000 -4000 0
-                 12000 -4000 0
-                 16000 -4000 0
-                 20000 -4000 0
-                 24000 -4000 0'
   []
 []

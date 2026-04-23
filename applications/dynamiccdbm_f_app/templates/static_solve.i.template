@@ -1,0 +1,490 @@
+# Static solve input file (auto-generated from JSON config)
+# Preset: ${_preset_name}
+# Solves for equilibrium stress/strain under gravity + tectonic loading
+#
+#PARAM_BLOCK
+
+[Mesh]
+  [./msh]
+    type = FileMeshGenerator
+    file = '${mesh_file}'
+  []
+  [./sidesets]
+    input = msh
+    type = SideSetsFromNormalsGenerator
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0
+                0 0 -1
+                0 0 1'
+    new_boundary = 'left right back front bottom top'
+  []
+  [./extranodeset1]
+      type = ExtraNodesetGenerator
+      coord = ${bottom_nodes_coord}
+      new_boundary = corner_ptr
+      input = sidesets
+  []
+[]
+
+[GlobalParams]
+  displacements = 'disp_x disp_y disp_z'
+
+  ##----continuum damage breakage model----##
+  lambda_o = ${lambda_o}
+  shear_modulus_o = ${shear_modulus_o}
+  xi_0 = ${xi_0}
+  xi_d = ${xi_d}
+  xi_max = ${xi_max}
+  xi_min = ${xi_min}
+  Cd_constant = 0
+  CdCb_multiplier = ${CdCb_multiplier}
+  CBH_constant = ${CBH_constant}
+  C_1 = ${C_1}
+  C_2 = ${C_2}
+  beta_width = ${beta_width}
+  C_g = ${C_g}
+  m1 = ${m1}
+  m2 = ${m2}
+  chi = ${chi}
+[]
+
+[Variables]
+  [disp_x]
+    order = FIRST
+    family = LAGRANGE
+  []
+  [disp_y]
+    order = FIRST
+    family = LAGRANGE
+  []
+  [disp_z]
+    order = FIRST
+    family = LAGRANGE
+  []
+[]
+
+[AuxVariables]
+[]
+
+[AuxKernels]
+[]
+
+[Kernels]
+  [SolidMechanics]
+    displacements = 'disp_x disp_y disp_z'
+  [../]
+  [gravity_z]
+    type = BodyForce
+    variable = disp_z
+    value = ${fparse -1 * density * gravity + 1 * fluid_density * gravity}
+  []
+[]
+
+[Materials]
+  [./elasticity_tensor]
+    type = ComputeIsotropicElasticityTensor
+    shear_modulus = ${shear_modulus_o}
+    lambda = ${lambda_o}
+  [../]
+  [strain]
+    type = ComputeSmallStrain
+    eigenstrain_names = ini_stress
+    outputs = exodus
+  []
+  [stress_medium]
+    type = ComputeDamageBreakageStress3DStatic
+    output_properties = 'B alpha_damagedvar xi I1 I2 stress elastic_strain'
+    outputs = exodus
+  []
+  [dummy_material]
+      type = GenericConstantMaterial
+      prop_names = 'initial_damage initial_breakage damage_perturbation density'
+      prop_values = '0 0 0 ${density}'
+  []
+  [./static_initial_strain_tensor]
+    type = ComputeEigenstrainFromInitialStress
+    initial_stress = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
+                      func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
+                      func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
+    eigenstrain_name = ini_stress
+  [../]
+  [./static_initial_stress_tensor]
+      type = GenericFunctionRankTwoTensor
+      tensor_name = static_initial_stress_tensor
+      tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
+                          func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
+                          func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
+      output_properties = 'static_initial_stress_tensor'
+      outputs = exodus
+  [../]
+  [./comp_xi]
+    type = ComputeXi
+    output_properties = 'strain_invariant_ratio'
+    outputs = exodus
+  []
+[]
+
+[BCs]
+  [fix_bottom_z]
+      type = DirichletBC
+      variable = disp_z
+      boundary = bottom
+      value = 0
+  []
+  [static_pressure_left]
+      type = FunctionNeumannBC
+      variable = disp_x
+      boundary = left
+      function = func_pos_xx_stress
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [static_pressure_right]
+      type = FunctionNeumannBC
+      variable = disp_x
+      boundary = right
+      function = func_neg_xx_stress
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [static_pressure_front]
+      type = FunctionNeumannBC
+      variable = disp_y
+      boundary = front
+      function = func_neg_yy_stress
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [static_pressure_back]
+      type = FunctionNeumannBC
+      variable = disp_y
+      boundary = back
+      function = func_pos_yy_stress
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [static_pressure_front_shear]
+      type = FunctionNeumannBC
+      variable = disp_x
+      boundary = front
+      function = func_pos_xy_stress
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [static_pressure_back_shear]
+      type = FunctionNeumannBC
+      variable = disp_x
+      boundary = back
+      function = func_neg_xy_stress
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [static_pressure_left_shear]
+      type = FunctionNeumannBC
+      variable = disp_y
+      boundary = left
+      function = func_neg_xy_stress
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [static_pressure_right_shear]
+      type = FunctionNeumannBC
+      variable = disp_y
+      boundary = right
+      function = func_pos_xy_stress
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [fix_node_x]
+    type = DirichletBC
+    variable = disp_x
+    boundary = 'corner_ptr'
+    value = 0
+  [../]
+  [fix_node_y]
+    type = DirichletBC
+    variable = disp_y
+    boundary = 'corner_ptr'
+    value = 0
+  [../]
+  [fix_node_z]
+    type = DirichletBC
+    variable = disp_z
+    boundary = 'corner_ptr'
+    value = 0
+  [../]
+[]
+
+[Functions]
+  ###stress field###
+#{IF NOT_DEPTH_DEPENDENT}
+  [./func_initial_stress_xx]
+    type = InitialStressStrainTPV26
+    get_initial_stress = true
+    i = 1
+    j = 1
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    rock_density = ${density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+  []
+  [./func_initial_stress_xy]
+    type = InitialStressStrainTPV26
+    get_initial_stress = true
+    i = 1
+    j = 2
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    rock_density = ${density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+  []
+  [./func_initial_stress_xz]
+    type = InitialStressStrainTPV26
+    get_initial_stress = true
+    i = 1
+    j = 3
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    rock_density = ${density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+  []
+  [./func_initial_stress_yy]
+    type = InitialStressStrainTPV26
+    get_initial_stress = true
+    i = 2
+    j = 2
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    rock_density = ${density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+  []
+  [./func_initial_stress_yz]
+    type = InitialStressStrainTPV26
+    get_initial_stress = true
+    i = 2
+    j = 3
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    rock_density = ${density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+  []
+  [./func_initial_stress_zz]
+    type = InitialStressStrainTPV26
+    get_initial_stress = true
+    i = 3
+    j = 3
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    rock_density = ${density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+  []
+#{ENDIF NOT_DEPTH_DEPENDENT}
+#{IF DEPTH_DEPENDENT}
+  [./func_initial_stress_xx]
+    type = InitialStressStrainTPV26VaryingDensity
+    get_initial_stress = true
+    i = 1
+    j = 1
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+    flip_sign = true
+  []
+  [./func_initial_stress_xy]
+    type = InitialStressStrainTPV26VaryingDensity
+    get_initial_stress = true
+    i = 1
+    j = 2
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+    flip_sign = true
+  []
+  [./func_initial_stress_xz]
+    type = InitialStressStrainTPV26VaryingDensity
+    get_initial_stress = true
+    i = 1
+    j = 3
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+    flip_sign = true
+  []
+  [./func_initial_stress_yy]
+    type = InitialStressStrainTPV26VaryingDensity
+    get_initial_stress = true
+    i = 2
+    j = 2
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+    flip_sign = true
+  []
+  [./func_initial_stress_yz]
+    type = InitialStressStrainTPV26VaryingDensity
+    get_initial_stress = true
+    i = 2
+    j = 3
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+    flip_sign = true
+  []
+  [./func_initial_stress_zz]
+    type = InitialStressStrainTPV26VaryingDensity
+    get_initial_stress = true
+    i = 3
+    j = 3
+    lambda_o = ${lambda_o}
+    shear_modulus_o = ${shear_modulus_o}
+    fluid_density = ${fluid_density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+    flip_sign = true
+  []
+#{ENDIF DEPTH_DEPENDENT}
+  ###composite functions for BCs###
+  [./func_pos_xx_stress]
+    type = CompositeFunction
+    functions = 'func_initial_stress_xx'
+    scale_factor = '-1'
+  [../]
+  [./func_neg_xx_stress]
+    type = CompositeFunction
+    functions = 'func_initial_stress_xx'
+    scale_factor = '1'
+  [../]
+  [./func_pos_xy_stress]
+    type = CompositeFunction
+    functions = 'func_initial_stress_xy'
+    scale_factor = '1'
+  [../]
+  [./func_neg_xy_stress]
+    type = CompositeFunction
+    functions = 'func_initial_stress_xy'
+    scale_factor = '-1'
+  [../]
+  [./func_pos_yy_stress]
+    type = CompositeFunction
+    functions = 'func_initial_stress_yy'
+    scale_factor = '-1'
+  [../]
+  [./func_neg_yy_stress]
+    type = CompositeFunction
+    functions = 'func_initial_stress_yy'
+    scale_factor = '1'
+  [../]
+  [./func_pos_zz_stress]
+    type = CompositeFunction
+    functions = 'func_initial_stress_zz'
+    scale_factor = '1'
+  [../]
+  [./func_neg_zz_stress]
+    type = CompositeFunction
+    functions = 'func_initial_stress_zz'
+    scale_factor = '-1'
+  [../]
+[]
+
+[Preconditioning]
+  [./andy]
+    type = SMP
+    full = true
+  [../]
+[]
+
+[Executioner]
+  solve_type = NEWTON
+  type = Steady
+
+  nl_abs_tol = 1E-12
+  nl_rel_tol = 1E-12
+  l_tol = 1E-7
+  l_max_its = 200
+  nl_max_its = 400
+  line_search  = 'basic'
+  automatic_scaling = true
+  verbose = true
+  petsc_options_iname = '-pc_type -pc_asm_overlap -sub_pc_type -ksp_type -ksp_gmres_restart'
+  petsc_options_value = ' asm      2              hypre             gmres     200'
+[]
+
+[Outputs]
+  exodus = true
+[]

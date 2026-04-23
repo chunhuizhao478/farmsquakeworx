@@ -4,7 +4,6 @@
 # [Note]: This serves as a test file, to run the full problem, please extend the domain size by modifying nx, ny, xmin, xmax, ymin, ymax
 
 [Mesh]
-    parallel_type = DISTRIBUTED
     [./msh]
       type = GeneratedMeshGenerator
       dim = 2

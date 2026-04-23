@@ -1,4 +1,4 @@
-# Integration test for ComputeDamageBreakageStress3DSlipWeakeningNonlocal
+# Integration test for ComputeDamageBreakageStress3DSlipWeakening (nonlocal mode)
 # Also tests ElkRadialAverageUpdated and ElkNonlocalEqstrainUpdated
 # 3D CDBM with nonlocal strain averaging
 
@@ -342,7 +342,7 @@ q = 0.1
 
 [Materials]
   [stress_medium_nonlocal]
-    type = ComputeDamageBreakageStress3DSlipWeakeningNonlocal
+    type = ComputeDamageBreakageStress3DSlipWeakening
     use_nonlocal_eqstrain = true
     nonlocal_eqstrain_blocks = '100 200'
   []

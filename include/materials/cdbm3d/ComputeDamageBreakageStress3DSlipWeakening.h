@@ -10,11 +10,29 @@
 #pragma once
 
 #include "ComputeDamageBreakageStressBase3D.h"
+#include <vector>
+#include <algorithm>
 
 /**
- * ComputeDamageBreakageStress3DSlipWeakening put everything inside the computeQpstress without defining
- * additional functions
- 
+ * ComputeDamageBreakageStress3DSlipWeakening
+ *
+ * Unified damage-breakage stress material for 3D slip-weakening simulations.
+ *
+ * This class consolidates three former variants into a single implementation
+ * controlled by optional boolean/material-property parameters:
+ *
+ *   Former class                                         Equivalent settings in this class
+ *   ---------------------------------------------------- --------------------------------------------------
+ *   ComputeDamageBreakageStress3DSlipWeakening           all optional features OFF (defaults)
+ *     (used by: 3d_damagebreakage_v1, case4)
+ *
+ *   ComputeDamageBreakageStress3DSlipWeakeningNonlocal   use_nonlocal_eqstrain = true
+ *     (used by: 3d_damagebreakage_case1, case2)          + optional: use_nonlocal_strain_rate,
+ *                                                                    static_solve_flag
+ *
+ *   ComputeDamageBreakageStress3DSlipWeakening-           use_nonlocal_eqstrain = true
+ *     VelocityStructureNonlocal                           + lambda_input / shear_modulus_input
+ *     (used by: 3d_damagebreakage_case3)                  + zero_Cd_below_threshold = true
  */
 class ComputeDamageBreakageStress3DSlipWeakening : public ComputeDamageBreakageStressBase3D
 {
@@ -39,17 +57,17 @@ protected:
   std::vector<Real> computecoefficients(Real gamma_damaged_r);
 
   /// @brief Compute first root of hessian matrix
-  /// @param xi 
+  /// @param xi
   /// @return the first root of critical alpha_cr
   Real alphacr_root1(Real xi, Real gamma_damaged_r);
 
   /// @brief Compute second root of hessian matrix
-  /// @param xi 
+  /// @param xi
   /// @return the second root of critical alpha_cr
   Real alphacr_root2(Real xi, Real gamma_damaged_r);
 
   /// @brief Compute elasticity tensor for small strain
-  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee, 
+  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee,
                                        Real a0, Real a1, Real a2, Real a3, Real gamma_damaged_r);
 
   /// @brief Setup initial values for the first step
@@ -61,7 +79,10 @@ protected:
   /// @brief Compute strain rate dependent Cd
   void computeStrainRateCd();
 
-  /// additional variables
+  // =========================================================================
+  //  Common material parameters
+  // =========================================================================
+
   /// strain invariants ratio: onset of damage evolution
   Real _xi_0;
 
@@ -86,7 +107,10 @@ protected:
   /// coefficient of power law indexes
   Real _m2;
 
-  /// get old parameters : see definitions in "ComputeGeneralDamageBreakageStressBase"
+  // =========================================================================
+  //  Old (previous-timestep) state variables
+  // =========================================================================
+
   const MaterialProperty<Real> & _alpha_damagedvar_old;
   const MaterialProperty<Real> & _B_old;
   const MaterialProperty<Real> & _xi_old;
@@ -102,20 +126,22 @@ protected:
   const MaterialProperty<RankTwoTensor> & _sigma_d_old;
   const MaterialProperty<RankTwoTensor> & _sts_total_old;
 
-  /// Get initial values
+  // =========================================================================
+  //  Initial / static-solve values
+  // =========================================================================
+
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
   const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;
   const MaterialProperty<RankTwoTensor> & _sts_initial_tensor_old;
-  // const MaterialProperty<Real> & _I1_initial;
-  // const MaterialProperty<Real> & _I2_initial;
-  // const MaterialProperty<Real> & _xi_initial;
   const MaterialProperty<Real> & _initial_damage;
   const MaterialProperty<Real> & _initial_breakage;
 
   /// perturbation (damage)
   const MaterialProperty<Real> & _damage_perturbation;
-  /// perturbation (shear stress)
-  // const MaterialProperty<Real> & _shear_stress_perturbation;
+
+  // =========================================================================
+  //  Damage / breakage evolution coefficients
+  // =========================================================================
 
   /// coefficient of positive damage evolution
   Real _Cd_constant;
@@ -140,7 +166,7 @@ protected:
 
   int & _step;
 
-  /// matprop : deviatoric stress tensor
+  /// matprop : deviatoric strain rate
   MaterialProperty<Real> & _deviatroic_strain_rate;
   const MaterialProperty<Real> & _deviatroic_strain_rate_old;
 
@@ -148,7 +174,10 @@ protected:
   MaterialProperty<Real> & _Cd_mat;
   const MaterialProperty<Real> & _Cd_mat_old;
 
-  /// strain rate dependent Cd parameters
+  // =========================================================================
+  //  Strain-rate-dependent Cd parameters
+  // =========================================================================
+
   bool _use_strain_rate_dependent_Cd;
   Real _m_exponent;
   Real _strain_rate_hat;
@@ -156,5 +185,42 @@ protected:
 
   /// option: set Cd = 0 when strain rate < strain_rate_hat (default: false -> use cd_hat)
   bool _zero_Cd_below_threshold;
+
+  // =========================================================================
+  //  Nonlocal equivalent strain  (formerly in *Nonlocal / *VelocityStructureNonlocal)
+  // =========================================================================
+
+  bool _use_nonlocal_eqstrain;
+  const MaterialProperty<Real> & _eqstrain_nonlocal_old;
+
+  /// blocks where nonlocal equivalent strain is enabled; empty means all blocks
+  const std::vector<unsigned int> _nonlocal_eqstrain_blocks;
+
+  // =========================================================================
+  //  Nonlocal strain rate for Cd  (formerly in *Nonlocal only)
+  // =========================================================================
+
+  bool _use_nonlocal_strain_rate;
+  const MaterialProperty<Real> * _strain_rate_nonlocal_old;
+
+  // =========================================================================
+  //  Static solve flag  (formerly in *Nonlocal only)
+  //  true  -> read initial strain from static_initial_strain_tensor (default)
+  //  false -> compute initial strain from stress via Hooke's law
+  // =========================================================================
+
+  bool _static_solve_flag;
+
+  /// helper: whether nonlocal eqstrain should be used on the current element
+  inline bool useNonlocalEqStrainHere() const
+  {
+    if (!_use_nonlocal_eqstrain)
+      return false;
+    if (_nonlocal_eqstrain_blocks.empty())
+      return true;
+    const auto sid = static_cast<unsigned int>(_current_elem->subdomain_id());
+    return std::find(_nonlocal_eqstrain_blocks.begin(), _nonlocal_eqstrain_blocks.end(), sid) !=
+           _nonlocal_eqstrain_blocks.end();
+  }
 
 };

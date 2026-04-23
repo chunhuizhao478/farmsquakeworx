@@ -1,0 +1,10 @@
+[Tests]
+  [initial_stress_strain_tpv26_varying_density]
+    type = CSVDiff
+    input = test_initial_stress_strain_tpv26_varying_density.i
+    csvdiff = 'test_initial_stress_strain_tpv26_varying_density_out.csv'
+    rel_err = 1e-6
+    abs_zero = 1e-8
+    requirement = "InitialStressStrainTPV26VaryingDensity shall return the hydrostatic fluid pressure and the TPV32-profile-integrated vertical initial stress at a specified depth."
+  []
+[]
