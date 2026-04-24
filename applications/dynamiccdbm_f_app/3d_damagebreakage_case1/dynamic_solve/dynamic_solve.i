@@ -105,7 +105,7 @@ t0 = 0.5 #nucleation time (s)
 ##model parameters##
 dt = 0.005 #time step size
 
-end_time = 20.0 #end time for simulation
+end_time = 10.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 20 #time step interval for output
@@ -118,7 +118,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/mesh_nonlocal_occ_40kmfault_uniform200m.msh'
+    file = '../../mesh/mesh_nonlocal_occ_40kmfault_uniform200m_tensileside.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator

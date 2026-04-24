@@ -82,7 +82,7 @@ t0 = 0.5 #nucleation time (s)
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/mesh_nonlocal_occ_40kmfault_uniform200m.msh'
+    file = '../../mesh/mesh_nonlocal_occ_40kmfault_uniform200m_tensileside.msh'
   []
   [./sidesets]
     input = msh
