@@ -33,4 +33,5 @@ export MV2_SHOW_ENV_INFO=1
 
 export MOOSE_JOBS=6 METHODS=opt
 
-ibrun /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/farmsquakeworx-opt -i /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/static_solve/static_solve.i --split-mesh 40 --split-file /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/static_solve/foo.cpr
+ibrun -n 1 /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/farmsquakeworx-opt -i /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/static_solve/static_solve.i --split-mesh 40 --split-file /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/static_solve/foo.cpr --allow-unused
+ibrun /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/farmsquakeworx-opt -i /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/static_solve/static_solve.i --use-split --split-file /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/static_solve/foo.cpr
