@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -J case1_static_solve        # Job name
-#SBATCH -o case1_static_solve.o%j    # Name of stdout output file
-#SBATCH -e case1_static_solve.e%j    # Name of stderr error file
+#SBATCH -J case1_static_dynamic        # Job name
+#SBATCH -o case1_static_dynamic.o%j    # Name of stdout output file
+#SBATCH -e case1_static_dynamic.e%j    # Name of stderr error file
 #SBATCH -p development          # Queue (partition) name
 #SBATCH -N 4              # Total # of nodes
 #SBATCH -n 160             # Total # of mpi tasks
