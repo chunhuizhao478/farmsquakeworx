@@ -4,7 +4,7 @@
 #SBATCH -e case1_static_dynamic.e%j    # Name of stderr error file
 #SBATCH -p development          # Queue (partition) name
 #SBATCH -N 4              # Total # of nodes
-#SBATCH -n 160             # Total # of mpi tasks
+#SBATCH -n 80             # Total # of mpi tasks
 #SBATCH -t 02:00:00        # Run time (hh:mm:ss)
 #SBATCH --mail-type=all    # Send email at begin and end of job
 #SBATCH -A EAR20006        # Project/Allocation name (req'd if you have more than 1)
@@ -33,5 +33,5 @@ export MV2_SHOW_ENV_INFO=1
 
 export MOOSE_JOBS=6 METHODS=opt
 
-ibrun -n 1 /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/farmsquakeworx-opt -i /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/dynamic_solve/dynamic_solve.i --split-mesh 160 --split-file /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/dynamic_solve/foo.cpr --allow-unused
+ibrun -n 1 /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/farmsquakeworx-opt -i /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/dynamic_solve/dynamic_solve.i --split-mesh 80 --split-file /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/dynamic_solve/foo.cpr --allow-unused
 ibrun /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/farmsquakeworx-opt -i /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/dynamic_solve/dynamic_solve.i --use-split --split-file /scratch2/10024/zhaochun/projects/farmsquakeworx_04022026/applications/dynamiccdbm_f_app/3d_damagebreakage_case1/dynamic_solve/foo.cpr --allow-unused
