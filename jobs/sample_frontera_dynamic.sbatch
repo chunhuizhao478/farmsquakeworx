@@ -3,7 +3,7 @@
 #SBATCH -o case1_static_dynamic.o%j    # Name of stdout output file
 #SBATCH -e case1_static_dynamic.e%j    # Name of stderr error file
 #SBATCH -p development          # Queue (partition) name
-#SBATCH -N 4              # Total # of nodes
+#SBATCH -N 6              # Total # of nodes
 #SBATCH -n 80             # Total # of mpi tasks
 #SBATCH -t 02:00:00        # Run time (hh:mm:ss)
 #SBATCH --mail-type=all    # Send email at begin and end of job
