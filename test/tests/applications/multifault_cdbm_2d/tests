@@ -1,0 +1,11 @@
+[Tests]
+  [multifault_cdbm_2d_short]
+    # End-to-end smoke test of the multifault CDBM pipeline.
+    # Validates that the rendered template + minimal mesh runs to completion.
+    type = RunApp
+    input = multifault_cdbm_2d_short.i
+    max_parallel = 4
+    min_parallel = 1
+    cli_args = '--allow-unused'
+  []
+[]

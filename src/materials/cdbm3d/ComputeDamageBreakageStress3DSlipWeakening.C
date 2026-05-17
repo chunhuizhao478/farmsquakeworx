@@ -91,8 +91,9 @@ ComputeDamageBreakageStress3DSlipWeakening::validParams()
   params.addParam<bool>("use_nonlocal_eqstrain", false,
                         "Use nonlocal equivalent strain (default: false)");
   params.addParam<std::vector<unsigned int>>("nonlocal_eqstrain_blocks", {},
-                        "REQUIRED when use_nonlocal_eqstrain=true. Subdomain/Block IDs where "
-                        "nonlocal equivalent strain is enabled (e.g., 100 200)");
+                        "Subdomain/Block IDs where nonlocal equivalent strain is enabled. "
+                        "Empty (default) means 'apply on every block' when "
+                        "use_nonlocal_eqstrain=true. Example: '100 200'.");
 
   // ---- Nonlocal strain rate for Cd calculation (formerly in *Nonlocal only) ----
   params.addParam<bool>("use_nonlocal_strain_rate", false,
@@ -165,10 +166,11 @@ ComputeDamageBreakageStress3DSlipWeakening::ComputeDamageBreakageStress3DSlipWea
     // static solve flag
     _static_solve_flag(getParam<bool>("static_solve_flag"))
 {
-  // Enforce explicit block list when nonlocal eqstrain is enabled
+  // Empty 'nonlocal_eqstrain_blocks' with use_nonlocal_eqstrain=true means
+  // "apply nonlocal averaging on EVERY block" (handled by useNonlocalEqStrainHere()).
   if (_use_nonlocal_eqstrain && _nonlocal_eqstrain_blocks.empty())
-    mooseError("When 'use_nonlocal_eqstrain=true' you must provide 'nonlocal_eqstrain_blocks' "
-               "(e.g., 'nonlocal_eqstrain_blocks = 100 200').");
+    mooseInfo("'use_nonlocal_eqstrain=true' with empty 'nonlocal_eqstrain_blocks' "
+              "-> nonlocal averaging will be applied on EVERY block.");
 }
 
 void

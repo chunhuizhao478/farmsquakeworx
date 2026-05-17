@@ -1,0 +1,9 @@
+[Tests]
+  [test_sw_czm_2d_cdbm_rotated]
+    type = CSVDiff
+    input = test_sw_czm_2d_cdbm_rotated.i
+    csvdiff = test_sw_czm_2d_cdbm_rotated_out_fault_traction_0001.csv
+    abs_zero = 1.0e3   # 1 kPa absolute tolerance
+    rel_err = 1.0e-3
+  []
+[]
